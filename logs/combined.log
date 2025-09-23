@@ -1,0 +1,6 @@
+[2025-09-23T22:06:40.578Z] [INFO] Starting Kick Bot Manager with Telegram interface
+[2025-09-23T22:06:40.605Z] [INFO] Reading accounts from file: ./accounts.txt
+[2025-09-23T22:06:40.613Z] [INFO] Successfully parsed 3 accounts
+[2025-09-23T22:06:40.617Z] [INFO] Loaded 3 accounts into UserManager
+[2025-09-23T22:06:40.619Z] [INFO] Loaded 3 accounts
+[2025-09-23T22:06:48.893Z] [INFO] Received SIGINT, shutting down gracefully...
