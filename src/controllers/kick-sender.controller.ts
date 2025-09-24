@@ -1,25 +1,36 @@
 import axios, { AxiosInstance } from "axios";
 import { UserConfig, SendMessageResponse } from "../types/interfaces.js";
 import { Logger } from "../utils/logger.js";
+import UserAgent from 'user-agents';
 
 export class KickSender {
   private baseUrl: string = `https://kick.com/api/v2/messages/send/`;
   private config: UserConfig;
   private logger: Logger;
   private axiosInstance: AxiosInstance;
-
   constructor(config: UserConfig, logger: Logger) {
     this.config = config;
     this.logger = logger;
 
+    // Если userAgent не указан, генерируем случайный
+    if (!this.config.userAgent) {
+      this.config.userAgent = this.generateRandomUserAgent();
+      this.logger.debug(`Auto-assigned user agent for ${this.config.username}: ${this.config.userAgent}`);
+    }
+
     this.axiosInstance = axios.create({
       headers: {
-        'User-Agent': config.userAgent,
+        'User-Agent': this.config.userAgent,
         'Authorization': `Bearer ${config.accessToken}`,
         'Content-Type': 'application/json'
       },
       timeout: 30000
     });
+  }
+
+  private generateRandomUserAgent(): string {
+    const userAgent = new UserAgent();
+    return userAgent.toString();
   }
 
   public async sendMessage(chatId: string, message: string): Promise<SendMessageResponse> {

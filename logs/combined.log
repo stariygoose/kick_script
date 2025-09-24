@@ -700,3 +700,17 @@
 [32m[2025-09-24T16:33:23.248Z] [INFO] Reading accounts from file: ./accounts.yml[0m
 [32m[2025-09-24T16:33:23.251Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
 [32m[2025-09-24T16:33:23.254Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-24T16:37:37.824Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-09-24T16:37:40.496Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-24T16:37:40.497Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T16:37:40.509Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-09-24T16:37:40.513Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-24T16:37:40.514Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-24T16:37:40.514Z] [INFO] Loaded 20 accounts[0m
+[32m[2025-09-24T16:37:46.508Z] [INFO] Exported 20 users and 1 streamers to ./export_1758731866503.yml[0m
+[32m[2025-09-24T16:37:46.508Z] [INFO] Exported data to YAML: ./export_1758731866503.yml[0m
+[32m[2025-09-24T16:37:46.613Z] [INFO] Configuration exported and sent to user via Telegram bot[0m
+[32m[2025-09-24T16:38:45.330Z] [INFO] Accounts file ./accounts.yml changed, reloading accounts...[0m
+[32m[2025-09-24T16:38:45.331Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T16:38:45.333Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-09-24T16:38:45.337Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m

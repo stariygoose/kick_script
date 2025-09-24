@@ -49,7 +49,7 @@ export class AccountParser {
         accounts.push({
           username,
           accessToken: userConfig.accessToken, // Full userId|token string is the token
-          userAgent: userConfig.userAgent || this.generateRandomUserAgent(),
+          userAgent: userConfig.userAgent, // Оставляем undefined если не указан
           proxy: userConfig.proxy
         });
       }
@@ -83,8 +83,7 @@ export class AccountParser {
 
       accounts.push({
         username: username.trim(),
-        accessToken: accessToken.trim(),
-        userAgent: this.generateRandomUserAgent()
+        accessToken: accessToken.trim()
       });
     }
 
@@ -118,12 +117,22 @@ export class AccountParser {
 
       // Convert users array to object format
       for (const user of users) {
-        config.users[user.username] = {
+        const userConfig: any = {
           username: user.username,
-          accessToken: user.accessToken,
-          userAgent: user.userAgent,
-          proxy: user.proxy
+          accessToken: user.accessToken
         };
+        
+        // Добавляем userAgent только если он был явно указан (не автогенерированный)
+        if (user.userAgent) {
+          userConfig.userAgent = user.userAgent;
+        }
+        
+        // Добавляем proxy только если он указан
+        if (user.proxy) {
+          userConfig.proxy = user.proxy;
+        }
+        
+        config.users[user.username] = userConfig;
       }
 
       const yamlContent = YAML.stringify(config, {

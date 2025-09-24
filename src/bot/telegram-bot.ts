@@ -2,7 +2,7 @@ import { Telegraf, Context, Markup } from 'telegraf';
 import { UserManager } from '../managers/user-manager.js';
 import { Logger } from '../utils/logger.js';
 import { UserConfig, StreamerConfig, BroadcastOptions, SendMessageResponse } from '../types/interfaces.js';
-import { writeFileSync, readFileSync } from 'fs';
+import { writeFileSync, readFileSync, existsSync, unlinkSync } from 'fs';
 import axios from 'axios';
 
 export class TelegramBot {
@@ -43,6 +43,7 @@ export class TelegramBot {
     this.bot.command('reload', (ctx) => this.handleReload(ctx));
     this.bot.command('stats', (ctx) => this.handleStats(ctx));
     this.bot.command('setbroadcast', (ctx) => this.handleSetBroadcast(ctx));
+    this.bot.command('export', (ctx) => this.handleExport(ctx));
 
     this.bot.catch((err: any, ctx) => {
       this.logger.error(`Bot error: ${err}`);
@@ -152,6 +153,11 @@ export class TelegramBot {
     this.bot.action('set_safe', (ctx) => {
       ctx.answerCbQuery();
       this.setBroadcastPreset(ctx, { concurrency: 2, delayMs: 500 }, 'Безопасный');
+    });
+
+    this.bot.action('export_config', (ctx) => {
+      ctx.answerCbQuery();
+      this.handleExport(ctx);
     });
   }
 
@@ -447,6 +453,37 @@ export class TelegramBot {
     this.logger.info(`Broadcast settings updated: concurrency=${concurrency}, delay=${delayMs}ms`);
   }
 
+  private async handleExport(ctx: Context): Promise<void> {
+    if (!this.isAdmin(ctx)) return;
+
+    try {
+      const exportPath = `./export_${Date.now()}.yml`;
+      
+      // Экспортируем конфигурацию в временный файл
+      this.userManager.exportToYaml(exportPath);
+      
+      // Отправляем файл пользователю
+      await ctx.replyWithDocument({
+        source: exportPath,
+        filename: `users_config_${new Date().toISOString().split('T')[0]}.yml`
+      }, {
+        caption: `📤 Экспорт конфигурации пользователей\n\n👥 Всего пользователей: ${this.userManager.getUserCount()}\n🎬 Всего стримеров: ${this.userManager.getAllStreamerNicknames().length}`,
+        ...this.getBackToMenuKeyboard()
+      });
+
+      // Удаляем временный файл
+      if (existsSync(exportPath)) {
+        unlinkSync(exportPath);
+      }
+
+      this.logger.info(`Configuration exported and sent to user via Telegram bot`);
+
+    } catch (error) {
+      ctx.reply(`❌ Ошибка экспорта: ${error}`, this.getBackToMenuKeyboard());
+      this.logger.error(`Failed to export configuration: ${error}`);
+    }
+  }
+
   private async updateAccountsFile(): Promise<void> {
     try {
       // Export current state to the watched file
@@ -536,6 +573,7 @@ export class TelegramBot {
   private showFilesMenu(ctx: Context): void {
     const keyboard = Markup.inlineKeyboard([
       [Markup.button.callback('📥 Импорт из файла', 'import_file')],
+      [Markup.button.callback('📤 Экспорт конфига', 'export_config')],
       [Markup.button.callback('🔄 Перезагрузить файл', 'reload_accounts')],
       [Markup.button.callback('⬅️ Назад', 'main_menu')],
     ]);
