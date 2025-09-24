@@ -48,7 +48,7 @@ export class AccountParser {
       for (const [username, userConfig] of Object.entries(config.users)) {
         accounts.push({
           username,
-          accessToken: userConfig.accessToken,
+          accessToken: userConfig.accessToken, // Full userId|token string is the token
           userAgent: userConfig.userAgent || this.generateRandomUserAgent(),
           proxy: userConfig.proxy
         });

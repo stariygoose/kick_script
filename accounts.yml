@@ -2,91 +2,67 @@ streamers:
   stariy_goose:
     nickname: stariy_goose
     chatId: "78046505"
-  Мне:
-    nickname: Мне
-    chatId: нужно
 users:
   makar4ik:
     username: makar4ik
-    accessToken: zuGU2VeYiCYXcrLbOgDHItvoQoDOc78KthxETHGX
-    userAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1
+    accessToken: 184685711|zuGU2VeYiCYXcrLbOgDHItvoQoDOc78KthxETHGX
   B_O_R_O_D_A:
     username: B_O_R_O_D_A
-    accessToken: rIudizc0k5B3C1Yra950jtc07FbxcHpspVxRwvdg
-    userAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1
+    accessToken: 184685936|rIudizc0k5B3C1Yra950jtc07FbxcHpspVxRwvdg
   Dudgelord:
     username: Dudgelord
-    accessToken: MgjumddEodxWhr2ei8LQZwRM9z4iARe55ANTPHvm
-    userAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1
+    accessToken: 184686196|MgjumddEodxWhr2ei8LQZwRM9z4iARe55ANTPHvm
   mostkovoj148:
     username: mostkovoj148
-    accessToken: VI0H71fKi00O8KJ62rcHZ5hCB5tm1a2R6vQxZQ6w
-    userAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1
+    accessToken: 237217281|VI0H71fKi00O8KJ62rcHZ5hCB5tm1a2R6vQxZQ6w
   TOP1_XIM3ABO:
     username: TOP1_XIM3ABO
-    accessToken: ArpoboDm1rZUw1NiD6hAtn9xAh2I7QbJaFhbuEK5
-    userAgent: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36
+    accessToken: 184686418|ArpoboDm1rZUw1NiD6hAtn9xAh2I7QbJaFhbuEK5
   Xsolla:
     username: Xsolla
-    accessToken: 4klK8198mdqpG1VuoVi83Qwmbw5IAyAECke5s6SA
-    userAgent: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36
+    accessToken: 111199674|4klK8198mdqpG1VuoVi83Qwmbw5IAyAECke5s6SA
   ArtemGotlib:
     username: ArtemGotlib
-    accessToken: 8f3v68FEJ26jVY1FSFFa3dza4zkcaQaup0tsC5Zl
-    userAgent: Mozilla/5.0 (Android 15; Mobile; rv:143.0) Gecko/143.0 Firefox/143.0
+    accessToken: 184687540|8f3v68FEJ26jVY1FSFFa3dza4zkcaQaup0tsC5Zl
   BarbiGirl52:
     username: BarbiGirl52
-    accessToken: 5HR5Mli3QZG7BP0T70H26AbmUPfXhkMKJVJnDjSG
-    userAgent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36
+    accessToken: 184688042|5HR5Mli3QZG7BP0T70H26AbmUPfXhkMKJVJnDjSG
   Benzotape7:
     username: Benzotape7
-    accessToken: e6pbOAoYoVOmeOXDQOyrSLsk6eBMgKRmvprlY80K
-    userAgent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Safari/605.1.15
+    accessToken: 184688396|e6pbOAoYoVOmeOXDQOyrSLsk6eBMgKRmvprlY80K
   bloodmotherr:
     username: bloodmotherr
-    accessToken: k8sPZQb7KAmlE4UVbrR68MeGSM6t9VAX8wnUByA4
-    userAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/385.0.802777482 Mobile/15E148 Safari/604.1
+    accessToken: 190658354|k8sPZQb7KAmlE4UVbrR68MeGSM6t9VAX8wnUByA4
   BomjastiK:
     username: BomjastiK
-    accessToken: JbtycYZWhMj1Rno0u9K7qSSov4lcUgkuYQVsIs5m
-    userAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1
+    accessToken: 190658696|JbtycYZWhMj1Rno0u9K7qSSov4lcUgkuYQVsIs5m
   BroToxi:
     username: BroToxi
-    accessToken: Q0FNPFfVVQAb1vya23mLV7OytioSOCI1c805WnwL
-    userAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 17_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Mobile/15E148 Safari/604.1
+    accessToken: 190658933|Q0FNPFfVVQAb1vya23mLV7OytioSOCI1c805WnwL
   Bushhidoo:
     username: Bushhidoo
-    accessToken: HV8r1r7VjScWb3WzgZlcN7ksIVlhH0gTsGmQMUg5
-    userAgent: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36
+    accessToken: 190659257|HV8r1r7VjScWb3WzgZlcN7ksIVlhH0gTsGmQMUg5
   CandyBunker:
     username: CandyBunker
-    accessToken: hZiNNzOjaPebqKqnGqNjSOu9TIyhM9173wErCVvp
-    userAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1
+    accessToken: 190659475|hZiNNzOjaPebqKqnGqNjSOu9TIyhM9173wErCVvp
   MisterBarabolya:
     username: MisterBarabolya
-    accessToken: zMKH0sC4x7xYH0MrhhUBzMvlt8BBDD1TNBWualOU
-    userAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1
+    accessToken: 111197120|zMKH0sC4x7xYH0MrhhUBzMvlt8BBDD1TNBWualOU
   dedisterr:
     username: dedisterr
-    accessToken: o97BtooMVrAr2bhyYSjCfmdXl7WtI8X2Fg9rmUaQ
-    userAgent: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36
+    accessToken: 111195378|o97BtooMVrAr2bhyYSjCfmdXl7WtI8X2Fg9rmUaQ
   FireArcher1:
     username: FireArcher1
-    accessToken: y0Na27tGtzrR7x5Wq2B6ULPMMrPNO1cmesaKnU4r
-    userAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1
+    accessToken: 190660208|y0Na27tGtzrR7x5Wq2B6ULPMMrPNO1cmesaKnU4r
   gartobarboss:
     username: gartobarboss
-    accessToken: D6p1Q4ODPn1uugjJBQgPpjQV9wKqf0sqPXZeqPEF
-    userAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Mobile/15E148 Safari/604.1
+    accessToken: 190660589|D6p1Q4ODPn1uugjJBQgPpjQV9wKqf0sqPXZeqPEF
   thetusk_88:
     username: thetusk_88
-    accessToken: we97vRHFWcV1aqFOIEoihEOpEcOILmYSBsGdqnqL
-    userAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1
+    accessToken: 111219633|we97vRHFWcV1aqFOIEoihEOpEcOILmYSBsGdqnqL
   Jakijan:
     username: Jakijan
-    accessToken: uPpFWZHAvz8Dn2CzQTSjdyA42arJjndiqSI2yNpf
-    userAgent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1
+    accessToken: 190660826|uPpFWZHAvz8Dn2CzQTSjdyA42arJjndiqSI2yNpf
   stariy_goose:
     username: stariy_goose
-    accessToken: KcdjFyJ1hCYpqVb2T1GSOFb2X2yfzymqwCtS43F5
-    userAgent: Mozilla/5.0 (Android 15; Mobile; rv:142.0) Gecko/142.0 Firefox/142.0
+    accessToken: 273617336|KcdjFyJ1hCYpqVb2T1GSOFb2X2yfzymqwCtS43F5

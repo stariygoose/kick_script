@@ -595,3 +595,51 @@
 [32m[2025-09-24T15:37:17.928Z] [INFO] Accounts reloaded via Telegram bot: 21 accounts[0m
 [32m[2025-09-24T15:37:21.414Z] [INFO] Exported 21 users to text format: ./export_20250924T153721.txt[0m
 [32m[2025-09-24T15:37:21.414Z] [INFO] Exported users to text format: ./export_20250924T153721.txt[0m
+[32m[2025-09-24T16:04:29.763Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-09-24T16:05:45.737Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-24T16:05:45.738Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T16:05:45.750Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-24T16:05:45.755Z] [INFO] Loaded 21 accounts and 2 streamers into UserManager[0m
+[32m[2025-09-24T16:05:45.756Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-24T16:05:45.757Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-24T16:05:56.688Z] [INFO] Exported 21 users and 1 streamers to ./accounts.yml[0m
+[32m[2025-09-24T16:05:56.689Z] [INFO] Exported data to YAML: ./accounts.yml[0m
+[32m[2025-09-24T16:05:56.689Z] [INFO] Updated accounts file: ./accounts.yml[0m
+[32m[2025-09-24T16:05:56.690Z] [INFO] Accounts file ./accounts.yml changed, reloading accounts...[0m
+[32m[2025-09-24T16:05:56.690Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T16:05:56.693Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-24T16:05:56.698Z] [INFO] Loaded 21 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-24T16:06:10.667Z] [INFO] Accounts file ./accounts.yml changed, reloading accounts...[0m
+[32m[2025-09-24T16:06:10.667Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T16:06:10.676Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-24T16:06:10.683Z] [INFO] Loaded 21 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-24T16:15:40.689Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-09-24T16:15:43.105Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-24T16:15:43.108Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T16:15:43.122Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-24T16:15:43.126Z] [INFO] Loaded 21 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-24T16:15:43.127Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-24T16:15:43.127Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-24T16:16:07.663Z] [INFO] Broadcasting message to 21 users with concurrency 5 and 200ms delay[0m
+[32m[2025-09-24T16:16:08.470Z] [INFO] Message sent successfully from makar4ik to chat 78046505[0m
+[32m[2025-09-24T16:16:08.496Z] [INFO] Message sent successfully from B_O_R_O_D_A to chat 78046505[0m
+[32m[2025-09-24T16:16:08.517Z] [INFO] Message sent successfully from Dudgelord to chat 78046505[0m
+[32m[2025-09-24T16:16:08.539Z] [INFO] Message sent successfully from TOP1_XIM3ABO to chat 78046505[0m
+[32m[2025-09-24T16:16:08.552Z] [INFO] Message sent successfully from mostkovoj148 to chat 78046505[0m
+[32m[2025-09-24T16:16:09.617Z] [INFO] Message sent successfully from bloodmotherr to chat 78046505[0m
+[32m[2025-09-24T16:16:09.622Z] [INFO] Message sent successfully from Benzotape7 to chat 78046505[0m
+[32m[2025-09-24T16:16:09.625Z] [INFO] Message sent successfully from Xsolla to chat 78046505[0m
+[32m[2025-09-24T16:16:09.628Z] [INFO] Message sent successfully from ArtemGotlib to chat 78046505[0m
+[32m[2025-09-24T16:16:10.042Z] [INFO] Message sent successfully from BarbiGirl52 to chat 78046505[0m
+[32m[2025-09-24T16:16:10.974Z] [INFO] Message sent successfully from CandyBunker to chat 78046505[0m
+[32m[2025-09-24T16:16:10.991Z] [INFO] Message sent successfully from Bushhidoo to chat 78046505[0m
+[32m[2025-09-24T16:16:11.008Z] [INFO] Message sent successfully from MisterBarabolya to chat 78046505[0m
+[32m[2025-09-24T16:16:11.012Z] [INFO] Message sent successfully from BroToxi to chat 78046505[0m
+[32m[2025-09-24T16:16:11.027Z] [INFO] Message sent successfully from BomjastiK to chat 78046505[0m
+[32m[2025-09-24T16:16:11.957Z] [INFO] Message sent successfully from FireArcher1 to chat 78046505[0m
+[32m[2025-09-24T16:16:11.959Z] [INFO] Message sent successfully from thetusk_88 to chat 78046505[0m
+[32m[2025-09-24T16:16:11.975Z] [INFO] Message sent successfully from gartobarboss to chat 78046505[0m
+[32m[2025-09-24T16:16:11.981Z] [INFO] Message sent successfully from Jakijan to chat 78046505[0m
+[32m[2025-09-24T16:16:12.674Z] [INFO] Message sent successfully from dedisterr to chat 78046505[0m
+[32m[2025-09-24T16:16:13.492Z] [INFO] Message sent successfully from stariy_goose to chat 78046505[0m
+[32m[2025-09-24T16:16:13.492Z] [INFO] Concurrent broadcast completed: 21 sent, 0 failed[0m

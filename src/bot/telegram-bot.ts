@@ -100,6 +100,11 @@ export class TelegramBot {
       this.startAddStreamerProcess(ctx);
     });
 
+    this.bot.action('remove_streamer', (ctx) => {
+      ctx.answerCbQuery();
+      this.startRemoveStreamerProcess(ctx);
+    });
+
     this.bot.action('list_streamers', (ctx) => {
       ctx.answerCbQuery();
       this.handleListStreamers(ctx);
@@ -504,6 +509,7 @@ export class TelegramBot {
   private showStreamersMenu(ctx: Context): void {
     const keyboard = Markup.inlineKeyboard([
       [Markup.button.callback('➕ Добавить стримера', 'add_streamer')],
+      [Markup.button.callback('➖ Удалить стримера', 'remove_streamer')],
       [Markup.button.callback('📋 Список стримеров', 'list_streamers')],
       [Markup.button.callback('⬅️ Назад', 'main_menu')],
     ]);
@@ -601,6 +607,12 @@ export class TelegramBot {
     ctx.editMessageText('➕ Добавление стримера\n\nВведите данные в формате:\nnickname chatId');
   }
 
+  private startRemoveStreamerProcess(ctx: Context): void {
+    const userId = this.getUserId(ctx);
+    this.userStates.set(userId, 'waiting_streamer_to_remove');
+    ctx.editMessageText('➖ Удаление стримера\n\nВведите nickname стримера для удаления:');
+  }
+
   private startBroadcastProcess(ctx: Context): void {
     const userId = this.getUserId(ctx);
     this.userStates.set(userId, 'waiting_broadcast_data');
@@ -628,6 +640,9 @@ export class TelegramBot {
         break;
       case 'waiting_streamer_data':
         await this.processAddStreamer(ctx, text);
+        break;
+      case 'waiting_streamer_to_remove':
+        await this.processRemoveStreamer(ctx, text);
         break;
       case 'waiting_broadcast_data':
         await this.processBroadcast(ctx, text);
@@ -682,6 +697,24 @@ export class TelegramBot {
       ctx.reply(`✅ Стример ${nickname} добавлен`, this.getBackToMenuKeyboard());
     } catch (error) {
       ctx.reply(`❌ Ошибка добавления стримера: ${error}`, this.getBackToMenuKeyboard());
+    }
+  }
+
+  private async processRemoveStreamer(ctx: Context, nickname: string): Promise<void> {
+    try {
+      const trimmedNickname = nickname.trim();
+      const streamer = this.userManager.getStreamer(trimmedNickname);
+      
+      if (!streamer) {
+        ctx.reply(`❌ Стример ${trimmedNickname} не найден`, this.getBackToMenuKeyboard());
+        return;
+      }
+
+      this.userManager.removeStreamer(trimmedNickname);
+      await this.updateAccountsFile();
+      ctx.reply(`✅ Стример ${trimmedNickname} удален`, this.getBackToMenuKeyboard());
+    } catch (error) {
+      ctx.reply(`❌ Ошибка удаления стримера: ${error}`, this.getBackToMenuKeyboard());
     }
   }
 
