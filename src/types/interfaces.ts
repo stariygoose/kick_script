@@ -20,3 +20,8 @@ export interface SendMessageResponse {
   data?: any;
   error?: string;
 }
+
+export interface BroadcastOptions {
+  concurrency?: number;
+  delayMs?: number;
+}

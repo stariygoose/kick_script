@@ -1,4 +1,4 @@
-import { UserConfig, SendMessageResponse, StreamerConfig } from '../types/interfaces.js';
+import { UserConfig, SendMessageResponse, StreamerConfig, BroadcastOptions } from '../types/interfaces.js';
 import { KickSender } from '../controllers/kick-sender.controller.js';
 import { Logger } from '../utils/logger.js';
 import { AccountParser } from '../utils/account-parser.js';
@@ -322,6 +322,124 @@ export class UserManager {
       this.logger.error(`Failed to import from file: ${error}`);
       throw error;
     }
+  }
+
+  public async broadcastMessageConcurrent(
+    chatId: string,
+    message: string,
+    options: BroadcastOptions = {},
+    progressCallback?: (progress: {
+      currentUser: string;
+      currentIndex: number;
+      totalUsers: number;
+      sent: number;
+      failed: number;
+      result?: SendMessageResponse;
+      streamerNickname?: string;
+    }) => void
+  ): Promise<{ sent: number; failed: number; results: SendMessageResponse[] }> {
+    const { concurrency = 5, delayMs = 200 } = options;
+    const results: SendMessageResponse[] = [];
+    let sent = 0;
+    let failed = 0;
+    const usernames = Array.from(this.senders.keys());
+    const totalUsers = usernames.length;
+
+    // Find streamer nickname for the chatId
+    const streamerNickname = Array.from(this.streamers.values())
+      .find(streamer => streamer.chatId === chatId)?.nickname;
+
+    this.logger.info(`Broadcasting message to ${totalUsers} users with concurrency ${concurrency} and ${delayMs}ms delay`);
+
+    // Process users in chunks with concurrency limit
+    for (let i = 0; i < usernames.length; i += concurrency) {
+      const chunk = usernames.slice(i, i + concurrency);
+
+      // Process chunk concurrently
+      const chunkPromises = chunk.map(async (username, chunkIndex) => {
+        const globalIndex = i + chunkIndex;
+        const sender = this.senders.get(username);
+
+        if (!sender) {
+          const errorResult: SendMessageResponse = {
+            success: false,
+            error: `User: ${username} - Sender not found`
+          };
+          results[globalIndex] = errorResult;
+          failed++;
+
+          if (progressCallback) {
+            progressCallback({
+              currentUser: username,
+              currentIndex: globalIndex + 1,
+              totalUsers,
+              sent,
+              failed,
+              result: errorResult,
+              streamerNickname
+            });
+          }
+          return;
+        }
+
+        try {
+          const result = await sender.sendMessage(chatId, message);
+          results[globalIndex] = result;
+
+          if (result.success) {
+            sent++;
+          } else {
+            failed++;
+          }
+
+          // Call progress callback if provided
+          if (progressCallback) {
+            progressCallback({
+              currentUser: username,
+              currentIndex: globalIndex + 1,
+              totalUsers,
+              sent,
+              failed,
+              result,
+              streamerNickname
+            });
+          }
+
+        } catch (error) {
+          failed++;
+          const errorResult: SendMessageResponse = {
+            success: false,
+            error: `User: ${username} - Unexpected error: ${error}`
+          };
+          results[globalIndex] = errorResult;
+          this.logger.error(`Unexpected error sending message from ${username}: ${error}`);
+
+          // Call progress callback for error too
+          if (progressCallback) {
+            progressCallback({
+              currentUser: username,
+              currentIndex: globalIndex + 1,
+              totalUsers,
+              sent,
+              failed,
+              result: errorResult,
+              streamerNickname
+            });
+          }
+        }
+      });
+
+      // Wait for chunk to complete
+      await Promise.all(chunkPromises);
+
+      // Add delay between chunks (except for the last chunk)
+      if (i + concurrency < usernames.length && delayMs > 0) {
+        await this.delay(delayMs);
+      }
+    }
+
+    this.logger.info(`Concurrent broadcast completed: ${sent} sent, ${failed} failed`);
+    return { sent, failed, results };
   }
 
   private delay(ms: number): Promise<void> {

@@ -282,3 +282,127 @@
 [32m[2025-09-24T00:05:33.052Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
 [32m[2025-09-24T00:05:33.074Z] [INFO] Loaded 21 accounts and 2 streamers into UserManager[0m
 [32m[2025-09-24T00:07:12.845Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-09-24T00:10:58.090Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-24T00:10:58.117Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T00:10:58.160Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-24T00:10:58.184Z] [INFO] Loaded 21 accounts and 2 streamers into UserManager[0m
+[32m[2025-09-24T00:10:58.185Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-24T00:10:58.187Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-24T00:11:13.516Z] [INFO] Broadcasting message to 21 users with concurrency 5 and 200ms delay[0m
+[31m[2025-09-24T00:11:13.907Z] [ERROR] Failed to send message from makar4ik: User is not authenticated.[0m
+[31m[2025-09-24T00:11:13.911Z] [ERROR] Failed to send message from B_O_R_O_D_A: User is not authenticated.[0m
+[31m[2025-09-24T00:11:13.915Z] [ERROR] Failed to send message from mostkovoj148: User is not authenticated.[0m
+[31m[2025-09-24T00:11:13.918Z] [ERROR] Failed to send message from Dudgelord: User is not authenticated.[0m
+[31m[2025-09-24T00:11:13.926Z] [ERROR] Failed to send message from TOP1_XIM3ABO: User is not authenticated.[0m
+[31m[2025-09-24T00:11:14.406Z] [ERROR] Failed to send message from Benzotape7: User is not authenticated.[0m
+[31m[2025-09-24T00:11:14.410Z] [ERROR] Failed to send message from ArtemGotlib: User is not authenticated.[0m
+[31m[2025-09-24T00:11:14.412Z] [ERROR] Failed to send message from bloodmotherr: User is not authenticated.[0m
+[31m[2025-09-24T00:11:14.416Z] [ERROR] Failed to send message from BarbiGirl52: User is not authenticated.[0m
+[31m[2025-09-24T00:11:14.419Z] [ERROR] Failed to send message from Xsolla: User is not authenticated.[0m
+[31m[2025-09-24T00:11:14.912Z] [ERROR] Failed to send message from Bushhidoo: User is not authenticated.[0m
+[31m[2025-09-24T00:11:14.915Z] [ERROR] Failed to send message from BroToxi: User is not authenticated.[0m
+[31m[2025-09-24T00:11:14.917Z] [ERROR] Failed to send message from CandyBunker: User is not authenticated.[0m
+[31m[2025-09-24T00:11:14.920Z] [ERROR] Failed to send message from BomjastiK: User is not authenticated.[0m
+[31m[2025-09-24T00:11:15.517Z] [ERROR] Failed to send message from MisterBarabolya: User is not authenticated.[0m
+[31m[2025-09-24T00:11:15.944Z] [ERROR] Failed to send message from dedisterr: User is not authenticated.[0m
+[31m[2025-09-24T00:11:15.948Z] [ERROR] Failed to send message from FireArcher1: User is not authenticated.[0m
+[31m[2025-09-24T00:11:15.956Z] [ERROR] Failed to send message from Jakijan: User is not authenticated.[0m
+[31m[2025-09-24T00:11:15.961Z] [ERROR] Failed to send message from thetusk_88: User is not authenticated.[0m
+[31m[2025-09-24T00:11:15.964Z] [ERROR] Failed to send message from gartobarboss: User is not authenticated.[0m
+[31m[2025-09-24T00:11:16.953Z] [ERROR] Failed to send message from stariy_goose: User is not authenticated.[0m
+[32m[2025-09-24T00:11:16.955Z] [INFO] Concurrent broadcast completed: 0 sent, 21 failed[0m
+[32m[2025-09-24T00:11:36.714Z] [INFO] Broadcast preset "Быстрый" applied: concurrency=10, delay=100ms[0m
+[32m[2025-09-24T00:11:50.884Z] [INFO] Broadcasting message to 21 users with concurrency 10 and 100ms delay[0m
+[31m[2025-09-24T00:11:51.259Z] [ERROR] Failed to send message from B_O_R_O_D_A: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.274Z] [ERROR] Failed to send message from makar4ik: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.278Z] [ERROR] Failed to send message from mostkovoj148: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.285Z] [ERROR] Failed to send message from Dudgelord: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.287Z] [ERROR] Failed to send message from BarbiGirl52: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.290Z] [ERROR] Failed to send message from bloodmotherr: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.295Z] [ERROR] Failed to send message from TOP1_XIM3ABO: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.300Z] [ERROR] Failed to send message from Benzotape7: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.305Z] [ERROR] Failed to send message from Xsolla: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.310Z] [ERROR] Failed to send message from ArtemGotlib: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.669Z] [ERROR] Failed to send message from dedisterr: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.679Z] [ERROR] Failed to send message from MisterBarabolya: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.682Z] [ERROR] Failed to send message from CandyBunker: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.684Z] [ERROR] Failed to send message from FireArcher1: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.688Z] [ERROR] Failed to send message from BomjastiK: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.690Z] [ERROR] Failed to send message from BroToxi: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.694Z] [ERROR] Failed to send message from Bushhidoo: User is not authenticated.[0m
+[31m[2025-09-24T00:11:51.700Z] [ERROR] Failed to send message from thetusk_88: User is not authenticated.[0m
+[31m[2025-09-24T00:11:52.281Z] [ERROR] Failed to send message from Jakijan: User is not authenticated.[0m
+[31m[2025-09-24T00:11:52.285Z] [ERROR] Failed to send message from gartobarboss: User is not authenticated.[0m
+[31m[2025-09-24T00:11:52.688Z] [ERROR] Failed to send message from stariy_goose: User is not authenticated.[0m
+[32m[2025-09-24T00:11:52.690Z] [INFO] Concurrent broadcast completed: 0 sent, 21 failed[0m
+[32m[2025-09-24T00:12:41.696Z] [INFO] Broadcasting message to 21 users with concurrency 10 and 100ms delay[0m
+[31m[2025-09-24T00:12:42.064Z] [ERROR] Failed to send message from makar4ik: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.066Z] [ERROR] Failed to send message from mostkovoj148: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.069Z] [ERROR] Failed to send message from Benzotape7: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.071Z] [ERROR] Failed to send message from bloodmotherr: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.073Z] [ERROR] Failed to send message from BarbiGirl52: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.075Z] [ERROR] Failed to send message from ArtemGotlib: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.078Z] [ERROR] Failed to send message from B_O_R_O_D_A: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.080Z] [ERROR] Failed to send message from Xsolla: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.083Z] [ERROR] Failed to send message from Dudgelord: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.476Z] [ERROR] Failed to send message from TOP1_XIM3ABO: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.871Z] [ERROR] Failed to send message from Bushhidoo: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.884Z] [ERROR] Failed to send message from FireArcher1: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.888Z] [ERROR] Failed to send message from CandyBunker: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.891Z] [ERROR] Failed to send message from Jakijan: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.897Z] [ERROR] Failed to send message from thetusk_88: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.899Z] [ERROR] Failed to send message from dedisterr: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.902Z] [ERROR] Failed to send message from BomjastiK: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.905Z] [ERROR] Failed to send message from gartobarboss: User is not authenticated.[0m
+[31m[2025-09-24T00:12:42.908Z] [ERROR] Failed to send message from BroToxi: User is not authenticated.[0m
+[31m[2025-09-24T00:12:43.376Z] [ERROR] Failed to send message from MisterBarabolya: User is not authenticated.[0m
+[31m[2025-09-24T00:12:43.684Z] [ERROR] Failed to send message from stariy_goose: User is not authenticated.[0m
+[32m[2025-09-24T00:12:43.686Z] [INFO] Concurrent broadcast completed: 0 sent, 21 failed[0m
+[32m[2025-09-24T00:13:12.089Z] [INFO] Broadcasting message to 21 users with concurrency 10 and 100ms delay[0m
+[31m[2025-09-24T00:13:12.374Z] [ERROR] Failed to send message from Dudgelord: User is not authenticated.[0m
+[31m[2025-09-24T00:13:12.377Z] [ERROR] Failed to send message from ArtemGotlib: User is not authenticated.[0m
+[31m[2025-09-24T00:13:12.381Z] [ERROR] Failed to send message from makar4ik: User is not authenticated.[0m
+[31m[2025-09-24T00:13:12.389Z] [ERROR] Failed to send message from Xsolla: User is not authenticated.[0m
+[31m[2025-09-24T00:13:12.397Z] [ERROR] Failed to send message from bloodmotherr: User is not authenticated.[0m
+[31m[2025-09-24T00:13:12.399Z] [ERROR] Failed to send message from Benzotape7: User is not authenticated.[0m
+[31m[2025-09-24T00:13:12.401Z] [ERROR] Failed to send message from mostkovoj148: User is not authenticated.[0m
+[31m[2025-09-24T00:13:12.403Z] [ERROR] Failed to send message from BarbiGirl52: User is not authenticated.[0m
+[31m[2025-09-24T00:13:12.971Z] [ERROR] Failed to send message from TOP1_XIM3ABO: User is not authenticated.[0m
+[31m[2025-09-24T00:13:12.975Z] [ERROR] Failed to send message from B_O_R_O_D_A: User is not authenticated.[0m
+[31m[2025-09-24T00:13:13.288Z] [ERROR] Failed to send message from Bushhidoo: User is not authenticated.[0m
+[31m[2025-09-24T00:13:13.293Z] [ERROR] Failed to send message from MisterBarabolya: User is not authenticated.[0m
+[31m[2025-09-24T00:13:13.301Z] [ERROR] Failed to send message from CandyBunker: User is not authenticated.[0m
+[31m[2025-09-24T00:13:13.304Z] [ERROR] Failed to send message from BroToxi: User is not authenticated.[0m
+[31m[2025-09-24T00:13:13.313Z] [ERROR] Failed to send message from Jakijan: User is not authenticated.[0m
+[31m[2025-09-24T00:13:13.317Z] [ERROR] Failed to send message from FireArcher1: User is not authenticated.[0m
+[31m[2025-09-24T00:13:13.320Z] [ERROR] Failed to send message from thetusk_88: User is not authenticated.[0m
+[31m[2025-09-24T00:13:13.324Z] [ERROR] Failed to send message from gartobarboss: User is not authenticated.[0m
+[31m[2025-09-24T00:13:13.328Z] [ERROR] Failed to send message from dedisterr: User is not authenticated.[0m
+[31m[2025-09-24T00:13:13.891Z] [ERROR] Failed to send message from BomjastiK: User is not authenticated.[0m
+[31m[2025-09-24T00:13:14.301Z] [ERROR] Failed to send message from stariy_goose: User is not authenticated.[0m
+[32m[2025-09-24T00:13:14.302Z] [INFO] Concurrent broadcast completed: 0 sent, 21 failed[0m
+[32m[2025-09-24T00:13:37.749Z] [INFO] Broadcast preset "Балансированный" applied: concurrency=5, delay=200ms[0m
+[32m[2025-09-24T00:13:55.727Z] [INFO] Broadcasting message to 21 users with concurrency 5 and 200ms delay[0m
+[31m[2025-09-24T00:13:55.982Z] [ERROR] Failed to send message from makar4ik: User is not authenticated.[0m
+[31m[2025-09-24T00:13:55.993Z] [ERROR] Failed to send message from Dudgelord: User is not authenticated.[0m
+[31m[2025-09-24T00:13:55.995Z] [ERROR] Failed to send message from mostkovoj148: User is not authenticated.[0m
+[31m[2025-09-24T00:13:56.024Z] [ERROR] Failed to send message from TOP1_XIM3ABO: User is not authenticated.[0m
+[31m[2025-09-24T00:13:56.591Z] [ERROR] Failed to send message from B_O_R_O_D_A: User is not authenticated.[0m
+[31m[2025-09-24T00:13:56.998Z] [ERROR] Failed to send message from BarbiGirl52: User is not authenticated.[0m
+[31m[2025-09-24T00:13:57.006Z] [ERROR] Failed to send message from Benzotape7: User is not authenticated.[0m
+[31m[2025-09-24T00:13:57.010Z] [ERROR] Failed to send message from bloodmotherr: User is not authenticated.[0m
+[31m[2025-09-24T00:13:57.017Z] [ERROR] Failed to send message from ArtemGotlib: User is not authenticated.[0m
+[31m[2025-09-24T00:13:57.021Z] [ERROR] Failed to send message from Xsolla: User is not authenticated.[0m
+[31m[2025-09-24T00:13:57.512Z] [ERROR] Failed to send message from MisterBarabolya: User is not authenticated.[0m
+[31m[2025-09-24T00:13:57.520Z] [ERROR] Failed to send message from BomjastiK: User is not authenticated.[0m
+[31m[2025-09-24T00:13:57.522Z] [ERROR] Failed to send message from CandyBunker: User is not authenticated.[0m
+[31m[2025-09-24T00:13:57.524Z] [ERROR] Failed to send message from BroToxi: User is not authenticated.[0m
+[31m[2025-09-24T00:13:57.526Z] [ERROR] Failed to send message from Bushhidoo: User is not authenticated.[0m
+[31m[2025-09-24T00:13:58.029Z] [ERROR] Failed to send message from thetusk_88: User is not authenticated.[0m
+[31m[2025-09-24T00:13:58.033Z] [ERROR] Failed to send message from dedisterr: User is not authenticated.[0m
+[31m[2025-09-24T00:13:58.037Z] [ERROR] Failed to send message from Jakijan: User is not authenticated.[0m
+[31m[2025-09-24T00:13:58.040Z] [ERROR] Failed to send message from gartobarboss: User is not authenticated.[0m
+[31m[2025-09-24T00:13:58.043Z] [ERROR] Failed to send message from FireArcher1: User is not authenticated.[0m
+[31m[2025-09-24T00:13:58.578Z] [ERROR] Failed to send message from stariy_goose: User is not authenticated.[0m
+[32m[2025-09-24T00:13:58.579Z] [INFO] Concurrent broadcast completed: 0 sent, 21 failed[0m
+[32m[2025-09-24T00:14:31.400Z] [INFO] Received SIGINT, shutting down gracefully...[0m

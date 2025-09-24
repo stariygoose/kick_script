@@ -1,7 +1,7 @@
 import { Telegraf, Context, Markup } from 'telegraf';
 import { UserManager } from '../managers/user-manager.js';
 import { Logger } from '../utils/logger.js';
-import { UserConfig, StreamerConfig } from '../types/interfaces.js';
+import { UserConfig, StreamerConfig, BroadcastOptions } from '../types/interfaces.js';
 import { writeFileSync, readFileSync } from 'fs';
 
 export class TelegramBot {
@@ -11,6 +11,7 @@ export class TelegramBot {
   private adminChatId: string;
   private accountsFilePath: string = './accounts.yml';
   private userStates: Map<string, string> = new Map();
+  private broadcastOptions: BroadcastOptions = { concurrency: 5, delayMs: 200 };
 
   constructor(token: string, adminChatId: string, userManager: UserManager, logger: Logger) {
     this.bot = new Telegraf(token);
@@ -40,6 +41,7 @@ export class TelegramBot {
     this.bot.command('stats', (ctx) => this.handleStats(ctx));
     this.bot.command('export', (ctx) => this.handleExport(ctx));
     this.bot.command('import', (ctx) => this.handleImport(ctx));
+    this.bot.command('setbroadcast', (ctx) => this.handleSetBroadcast(ctx));
 
     this.bot.catch((err: any, ctx) => {
       this.logger.error(`Bot error: ${err}`);
@@ -126,6 +128,26 @@ export class TelegramBot {
     this.bot.action('show_stats', (ctx) => {
       ctx.answerCbQuery();
       this.handleStats(ctx);
+    });
+
+    this.bot.action('broadcast_settings', (ctx) => {
+      ctx.answerCbQuery();
+      this.showBroadcastSettings(ctx);
+    });
+
+    this.bot.action('set_fast', (ctx) => {
+      ctx.answerCbQuery();
+      this.setBroadcastPreset(ctx, { concurrency: 10, delayMs: 100 }, 'Быстрый');
+    });
+
+    this.bot.action('set_balanced', (ctx) => {
+      ctx.answerCbQuery();
+      this.setBroadcastPreset(ctx, { concurrency: 5, delayMs: 200 }, 'Балансированный');
+    });
+
+    this.bot.action('set_safe', (ctx) => {
+      ctx.answerCbQuery();
+      this.setBroadcastPreset(ctx, { concurrency: 2, delayMs: 500 }, 'Безопасный');
     });
   }
 
@@ -242,7 +264,7 @@ export class TelegramBot {
     try {
       const statusMessage = await ctx.reply('🚀 Начинаю рассылку...');
 
-      const result = await this.userManager.broadcastMessage(chatId, message, 1000, (progress) => {
+      const result = await this.userManager.broadcastMessageConcurrent(chatId, message, this.broadcastOptions, (progress) => {
         const percentage = Math.round((progress.currentIndex / progress.totalUsers) * 100);
         const progressBar = this.createProgressBar(percentage);
 
@@ -353,12 +375,59 @@ export class TelegramBot {
     if (!this.isAdmin(ctx)) return;
 
     const userCount = this.userManager.getUserCount();
-    const usernames = this.userManager.getAllUsernames();
+    const streamersCount = this.userManager.getAllStreamerNicknames().length;
+
+    // Calculate estimated broadcast time
+    const estimatedTime = Math.ceil(userCount / (this.broadcastOptions.concurrency || 1)) * ((this.broadcastOptions.delayMs || 0) / 1000);
 
     ctx.reply(`📊 Статистика:
 👥 Всего аккаунтов: ${userCount}
+🎬 Всего стримеров: ${streamersCount}
 📝 Файл: ${this.accountsFilePath}
-🤖 Бот активен: ✅`);
+🤖 Бот активен: ✅
+
+⚡ Настройки рассылки:
+🔄 Конкурентность: ${this.broadcastOptions.concurrency}
+⏱️ Задержка: ${this.broadcastOptions.delayMs}ms
+📈 Примерное время рассылки: ~${estimatedTime}с`);
+  }
+
+  private async handleSetBroadcast(ctx: Context): Promise<void> {
+    if (!this.isAdmin(ctx)) return;
+
+    const msg = ctx.message as any;
+    const args = msg?.text?.split(' ').slice(1);
+    if (!args || args.length < 2) {
+      ctx.reply(`❌ Формат: /setbroadcast <concurrency> <delayMs>
+
+Текущие настройки:
+🔄 Конкурентность: ${this.broadcastOptions.concurrency}
+⏱️ Задержка: ${this.broadcastOptions.delayMs}ms
+
+Пример: /setbroadcast 3 300`);
+      return;
+    }
+
+    const concurrency = parseInt(args[0]);
+    const delayMs = parseInt(args[1]);
+
+    if (isNaN(concurrency) || isNaN(delayMs) || concurrency < 1 || concurrency > 10 || delayMs < 0) {
+      ctx.reply('❌ Неверные параметры!\nКонкурентность: 1-10\nЗадержка: >= 0');
+      return;
+    }
+
+    this.broadcastOptions = { concurrency, delayMs };
+
+    // Calculate new estimated time
+    const userCount = this.userManager.getUserCount();
+    const estimatedTime = Math.ceil(userCount / concurrency) * (delayMs / 1000);
+
+    ctx.reply(`✅ Настройки рассылки обновлены!
+🔄 Конкурентность: ${concurrency}
+⏱️ Задержка: ${delayMs}ms
+📈 Примерное время рассылки: ~${estimatedTime}с`);
+
+    this.logger.info(`Broadcast settings updated: concurrency=${concurrency}, delay=${delayMs}ms`);
   }
 
   private async updateAccountsFile(): Promise<void> {
@@ -388,6 +457,7 @@ export class TelegramBot {
       [Markup.button.callback('👥 Управление пользователями', 'users_menu')],
       [Markup.button.callback('🎬 Управление стримерами', 'streamers_menu')],
       [Markup.button.callback('📢 Рассылка сообщений', 'broadcast_menu')],
+      [Markup.button.callback('⚡ Настройки рассылки', 'broadcast_settings')],
       [Markup.button.callback('📁 Файлы', 'files_menu')],
       [Markup.button.callback('📊 Статистика', 'show_stats')],
     ]);
@@ -458,6 +528,46 @@ export class TelegramBot {
 Текущий файл: ${this.accountsFilePath}`;
 
     ctx.editMessageText(message, keyboard);
+  }
+
+  private showBroadcastSettings(ctx: Context): void {
+    const userCount = this.userManager.getUserCount();
+    const estimatedTime = Math.ceil(userCount / (this.broadcastOptions.concurrency || 1)) * ((this.broadcastOptions.delayMs || 0) / 1000);
+
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.callback('⚡ Быстро (10 потоков, 100ms)', 'set_fast')],
+      [Markup.button.callback('⚖️ Балансированно (5 потоков, 200ms)', 'set_balanced')],
+      [Markup.button.callback('🐌 Безопасно (2 потока, 500ms)', 'set_safe')],
+      [Markup.button.callback('⬅️ Назад', 'main_menu')],
+    ]);
+
+    const message = `⚡ Настройки рассылки
+
+Текущие параметры:
+🔄 Конкурентность: ${this.broadcastOptions.concurrency}
+⏱️ Задержка: ${this.broadcastOptions.delayMs}ms
+📈 Время рассылки ${userCount} сообщений: ~${estimatedTime}с
+
+Выберите пресет или используйте /setbroadcast <потоки> <задержка>:`;
+
+    ctx.editMessageText(message, keyboard);
+  }
+
+  private setBroadcastPreset(ctx: Context, options: BroadcastOptions, presetName: string): void {
+    this.broadcastOptions = options;
+
+    const userCount = this.userManager.getUserCount();
+    const estimatedTime = Math.ceil(userCount / (options.concurrency || 1)) * ((options.delayMs || 0) / 1000);
+
+    ctx.reply(`✅ Применен пресет "${presetName}"!
+🔄 Конкурентность: ${options.concurrency}
+⏱️ Задержка: ${options.delayMs}ms
+📈 Новое время рассылки: ~${estimatedTime}с`);
+
+    this.logger.info(`Broadcast preset "${presetName}" applied: concurrency=${options.concurrency}, delay=${options.delayMs}ms`);
+
+    // Show updated settings
+    setTimeout(() => this.showBroadcastSettings(ctx), 2000);
   }
 
   private startAddUserProcess(ctx: Context): void {
@@ -575,7 +685,7 @@ export class TelegramBot {
     try {
       const statusMessage = await ctx.reply('🚀 Начинаю рассылку...');
 
-      const result = await this.userManager.broadcastMessage(chatId, message, 1000, (progress) => {
+      const result = await this.userManager.broadcastMessageConcurrent(chatId, message, this.broadcastOptions, (progress) => {
         const percentage = Math.round((progress.currentIndex / progress.totalUsers) * 100);
         const progressBar = this.createProgressBar(percentage);
 
