@@ -173,4 +173,8 @@ export class AccountParser {
     const userAgent = new UserAgent();
     return userAgent.toString();
   }
+
+  public parseAccountsFromTextContent(textContent: string): UserConfig[] {
+    return this.parseTextFormat(textContent);
+  }
 }

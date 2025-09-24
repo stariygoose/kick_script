@@ -39,8 +39,6 @@ export class TelegramBot {
     this.bot.command('sendmsg', (ctx) => this.handleSendMessage(ctx));
     this.bot.command('reload', (ctx) => this.handleReload(ctx));
     this.bot.command('stats', (ctx) => this.handleStats(ctx));
-    this.bot.command('export', (ctx) => this.handleExport(ctx));
-    this.bot.command('import', (ctx) => this.handleImport(ctx));
     this.bot.command('setbroadcast', (ctx) => this.handleSetBroadcast(ctx));
 
     this.bot.catch((err: any, ctx) => {
@@ -115,14 +113,9 @@ export class TelegramBot {
       this.startBroadcastProcess(ctx);
     });
 
-    this.bot.action('export_yaml', (ctx) => {
+    this.bot.action('import_text', (ctx) => {
       ctx.answerCbQuery();
-      this.handleExportYaml(ctx);
-    });
-
-    this.bot.action('export_text', (ctx) => {
-      ctx.answerCbQuery();
-      this.handleExportText(ctx);
+      this.startImportTextProcess(ctx);
     });
 
     this.bot.action('reload_accounts', (ctx) => {
@@ -536,8 +529,7 @@ export class TelegramBot {
 
   private showFilesMenu(ctx: Context): void {
     const keyboard = Markup.inlineKeyboard([
-      [Markup.button.callback('📤 Экспорт в YAML', 'export_yaml')],
-      [Markup.button.callback('📤 Экспорт в текст', 'export_text')],
+      [Markup.button.callback('📥 Импорт из текста', 'import_text')],
       [Markup.button.callback('🔄 Перезагрузить файл', 'reload_accounts')],
       [Markup.button.callback('⬅️ Назад', 'main_menu')],
     ]);
@@ -619,6 +611,12 @@ export class TelegramBot {
     ctx.editMessageText('📢 Рассылка сообщений\n\nВведите данные в формате:\nchatId message');
   }
 
+  private startImportTextProcess(ctx: Context): void {
+    const userId = this.getUserId(ctx);
+    this.userStates.set(userId, 'waiting_import_text');
+    ctx.editMessageText('📥 Импорт из текстового файла\n\nВставьте содержимое текстового файла в формате:\nusername=userId|token');
+  }
+
   private async handleTextInput(ctx: Context): Promise<void> {
     if (!this.isAdmin(ctx)) return;
 
@@ -646,6 +644,9 @@ export class TelegramBot {
         break;
       case 'waiting_broadcast_data':
         await this.processBroadcast(ctx, text);
+        break;
+      case 'waiting_import_text':
+        await this.processImportText(ctx, text);
         break;
     }
   }
@@ -803,6 +804,21 @@ export class TelegramBot {
     }
   }
 
+  private async processImportText(ctx: Context, textContent: string): Promise<void> {
+    try {
+      // Import from text content and overwrite YAML file
+      this.userManager.importFromTextAndOverwriteYaml(textContent.trim(), this.accountsFilePath);
+      
+      // Get the count of imported users
+      const userCount = this.userManager.getUserCount();
+      
+      ctx.reply(`✅ Импорт завершен успешно!\n\n📊 Импортировано пользователей: ${userCount}\n🔄 YAML файл обновлен: ${this.accountsFilePath}`, this.getBackToMenuKeyboard());
+      
+    } catch (error) {
+      ctx.reply(`❌ Ошибка импорта: ${error}`, this.getBackToMenuKeyboard());
+    }
+  }
+
   private createProgressBar(percentage: number): string {
     const totalBars = 10;
     const filledBars = Math.round((percentage / 100) * totalBars);
@@ -827,35 +843,6 @@ export class TelegramBot {
     ctx.reply(`📋 Загружено стримеров (${streamers.length}):\n\n${streamerList}`, this.getBackToMenuKeyboard());
   }
 
-  private handleExportYaml(ctx: Context): void {
-    try {
-      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
-      const outputPath = `./export_${timestamp}.yml`;
-      this.userManager.exportToYaml(outputPath);
-      ctx.reply(`✅ Данные экспортированы в YAML: ${outputPath}`, this.getBackToMenuKeyboard());
-    } catch (error) {
-      ctx.reply(`❌ Ошибка экспорта: ${error}`, this.getBackToMenuKeyboard());
-    }
-  }
-
-  private handleExportText(ctx: Context): void {
-    try {
-      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
-      const outputPath = `./export_${timestamp}.txt`;
-      this.userManager.exportToText(outputPath);
-      ctx.reply(`✅ Пользователи экспортированы в текст: ${outputPath}`, this.getBackToMenuKeyboard());
-    } catch (error) {
-      ctx.reply(`❌ Ошибка экспорта: ${error}`, this.getBackToMenuKeyboard());
-    }
-  }
-
-  private handleExport(ctx: Context): void {
-    this.showFilesMenu(ctx);
-  }
-
-  private handleImport(ctx: Context): void {
-    ctx.reply('📥 Импорт файлов\n\nИспользуйте команду: /import <путь_к_файлу>', this.getBackToMenuKeyboard());
-  }
 
   private getBackToMenuKeyboard() {
     return Markup.inlineKeyboard([
