@@ -771,3 +771,4 @@
 [32m[2025-09-24T17:10:02.560Z] [INFO] Message sent successfully from makar4ik to chat 78046505[0m
 [32m[2025-09-24T17:10:02.561Z] [INFO] Message sent from makar4ik via Telegram bot interface[0m
 [31m[2025-09-24T17:10:31.223Z] [ERROR] User 184685711 not found[0m
+[32m[2025-09-24T17:20:23.710Z] [INFO] Received SIGINT, shutting down gracefully...[0m
