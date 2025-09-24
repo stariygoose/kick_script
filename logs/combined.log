@@ -679,3 +679,24 @@
 [32m[2025-09-24T16:26:09.981Z] [INFO] Message sent successfully from FireArcher1 to chat 78046505[0m
 [32m[2025-09-24T16:26:09.982Z] [INFO] Message sent successfully from gartobarboss to chat 78046505[0m
 [32m[2025-09-24T16:26:09.982Z] [INFO] Concurrent broadcast completed: 20 sent, 0 failed[0m
+[32m[2025-09-24T16:29:17.407Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-09-24T16:29:26.838Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-24T16:29:26.840Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T16:29:26.849Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-09-24T16:29:26.854Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-24T16:29:26.855Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-24T16:29:26.855Z] [INFO] Loaded 20 accounts[0m
+[32m[2025-09-24T16:29:58.978Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-09-24T16:32:51.610Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-24T16:32:51.612Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T16:32:51.621Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-09-24T16:32:51.625Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-24T16:32:51.626Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-24T16:32:51.626Z] [INFO] Loaded 20 accounts[0m
+[32m[2025-09-24T16:33:23.241Z] [INFO] Successfully parsed 20 accounts from text format[0m
+[32m[2025-09-24T16:33:23.247Z] [INFO] Exported 20 users and 1 streamers to ./accounts.yml[0m
+[32m[2025-09-24T16:33:23.247Z] [INFO] Imported 20 accounts from text and updated YAML file: ./accounts.yml[0m
+[32m[2025-09-24T16:33:23.248Z] [INFO] Accounts file ./accounts.yml changed, reloading accounts...[0m
+[32m[2025-09-24T16:33:23.248Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T16:33:23.251Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-09-24T16:33:23.254Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m

@@ -332,6 +332,41 @@ export class UserManager {
     }
   }
 
+  public importFromFileAndOverwriteYaml(filePath: string, yamlFilePath: string): void {
+    try {
+      // Parse accounts from file
+      const accounts = this.accountParser.parseAccountsFile(filePath);
+      
+      // Clear current accounts
+      this.senders.clear();
+      
+      // Load new accounts
+      for (const account of accounts) {
+        const sender = new KickSender(account, this.logger);
+        this.senders.set(account.username, sender);
+      }
+
+      // Export to YAML (overwrite)
+      const users: UserConfig[] = [];
+      for (const [username, sender] of this.senders) {
+        users.push(sender.getUserConfig());
+      }
+
+      // Keep existing streamers
+      const streamersObject: Record<string, StreamerConfig> = {};
+      for (const [nickname, streamer] of this.streamers) {
+        streamersObject[nickname] = streamer;
+      }
+
+      this.accountParser.exportToYaml(users, streamersObject, yamlFilePath);
+      this.logger.info(`Imported ${accounts.length} accounts from file ${filePath} and updated YAML file: ${yamlFilePath}`);
+
+    } catch (error) {
+      this.logger.error(`Failed to import from file and overwrite YAML: ${error}`);
+      throw error;
+    }
+  }
+
   public importFromFile(filePath: string): void {
     try {
       const { users, streamers } = this.accountParser.importFromFile(filePath);

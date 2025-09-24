@@ -3,12 +3,14 @@ import { UserManager } from '../managers/user-manager.js';
 import { Logger } from '../utils/logger.js';
 import { UserConfig, StreamerConfig, BroadcastOptions, SendMessageResponse } from '../types/interfaces.js';
 import { writeFileSync, readFileSync } from 'fs';
+import axios from 'axios';
 
 export class TelegramBot {
   private bot: Telegraf;
   private userManager: UserManager;
   private logger: Logger;
   private adminChatId: string;
+  private botToken: string;
   private accountsFilePath: string = './accounts.yml';
   private userStates: Map<string, string> = new Map();
   private broadcastOptions: BroadcastOptions = { concurrency: 5, delayMs: 200 };
@@ -18,6 +20,7 @@ export class TelegramBot {
     this.userManager = userManager;
     this.logger = logger;
     this.adminChatId = adminChatId;
+    this.botToken = token;
 
     this.setupCommands();
     this.setupCallbacks();
@@ -50,6 +53,9 @@ export class TelegramBot {
 
     // Handle regular text messages for states
     this.bot.on('text', (ctx) => this.handleTextInput(ctx));
+    
+    // Handle document uploads
+    this.bot.on('document', (ctx) => this.handleDocumentUpload(ctx));
   }
 
   private setupCallbacks(): void {
@@ -113,9 +119,9 @@ export class TelegramBot {
       this.startBroadcastProcess(ctx);
     });
 
-    this.bot.action('import_text', (ctx) => {
+    this.bot.action('import_file', (ctx) => {
       ctx.answerCbQuery();
-      this.startImportTextProcess(ctx);
+      this.startImportFileProcess(ctx);
     });
 
     this.bot.action('reload_accounts', (ctx) => {
@@ -529,7 +535,7 @@ export class TelegramBot {
 
   private showFilesMenu(ctx: Context): void {
     const keyboard = Markup.inlineKeyboard([
-      [Markup.button.callback('📥 Импорт из текста', 'import_text')],
+      [Markup.button.callback('📥 Импорт из файла', 'import_file')],
       [Markup.button.callback('🔄 Перезагрузить файл', 'reload_accounts')],
       [Markup.button.callback('⬅️ Назад', 'main_menu')],
     ]);
@@ -611,10 +617,10 @@ export class TelegramBot {
     ctx.editMessageText('📢 Рассылка сообщений\n\nВведите данные в формате:\nchatId message');
   }
 
-  private startImportTextProcess(ctx: Context): void {
+  private startImportFileProcess(ctx: Context): void {
     const userId = this.getUserId(ctx);
-    this.userStates.set(userId, 'waiting_import_text');
-    ctx.editMessageText('📥 Импорт из текстового файла\n\nВставьте содержимое текстового файла в формате:\nusername=userId|token');
+    this.userStates.set(userId, 'waiting_file_upload');
+    ctx.editMessageText('📥 Импорт из файла\n\nЗагрузите текстовый файл с аккаунтами в формате:\nusername=userId|token\n\n📎 Прикрепите файл как документ');
   }
 
   private async handleTextInput(ctx: Context): Promise<void> {
@@ -644,9 +650,6 @@ export class TelegramBot {
         break;
       case 'waiting_broadcast_data':
         await this.processBroadcast(ctx, text);
-        break;
-      case 'waiting_import_text':
-        await this.processImportText(ctx, text);
         break;
     }
   }
@@ -804,18 +807,76 @@ export class TelegramBot {
     }
   }
 
-  private async processImportText(ctx: Context, textContent: string): Promise<void> {
+  private async processImportFile(ctx: Context, filePath: string): Promise<void> {
     try {
-      // Import from text content and overwrite YAML file
-      this.userManager.importFromTextAndOverwriteYaml(textContent.trim(), this.accountsFilePath);
+      const trimmedPath = filePath.trim();
+      
+      // Import from file and overwrite YAML file
+      this.userManager.importFromFileAndOverwriteYaml(trimmedPath, this.accountsFilePath);
       
       // Get the count of imported users
       const userCount = this.userManager.getUserCount();
       
-      ctx.reply(`✅ Импорт завершен успешно!\n\n📊 Импортировано пользователей: ${userCount}\n🔄 YAML файл обновлен: ${this.accountsFilePath}`, this.getBackToMenuKeyboard());
+      ctx.reply(`✅ Импорт завершен успешно!\n\n📁 Файл: ${trimmedPath}\n📊 Импортировано пользователей: ${userCount}\n🔄 YAML файл обновлен: ${this.accountsFilePath}`, this.getBackToMenuKeyboard());
       
     } catch (error) {
       ctx.reply(`❌ Ошибка импорта: ${error}`, this.getBackToMenuKeyboard());
+    }
+  }
+
+  private async handleDocumentUpload(ctx: Context): Promise<void> {
+    if (!this.isAdmin(ctx)) return;
+
+    const userId = this.getUserId(ctx);
+    const state = this.userStates.get(userId);
+
+    if (state !== 'waiting_file_upload') return;
+
+    this.userStates.delete(userId);
+
+    const message = ctx.message as any;
+    const document = message?.document;
+
+    if (!document) {
+      ctx.reply('❌ Не удалось получить файл', this.getBackToMenuKeyboard());
+      return;
+    }
+
+    try {
+      // Show processing message
+      const processingMsg = await ctx.reply('🔄 Обрабатываю файл...');
+
+      // Get file info from Telegram
+      const fileInfo = await ctx.telegram.getFile(document.file_id);
+      
+      if (!fileInfo.file_path) {
+        ctx.reply('❌ Не удалось получить путь к файлу', this.getBackToMenuKeyboard());
+        return;
+      }
+
+      // Download file from Telegram
+      const fileUrl = `https://api.telegram.org/file/bot${this.botToken}/${fileInfo.file_path}`;
+      const response = await axios.get(fileUrl, { responseType: 'text' });
+      const fileContent = response.data;
+
+      // Import from file content and overwrite YAML file
+      this.userManager.importFromTextAndOverwriteYaml(fileContent, this.accountsFilePath);
+      
+      // Get the count of imported users
+      const userCount = this.userManager.getUserCount();
+      
+      // Update processing message with result
+      await ctx.telegram.editMessageText(
+        ctx.chat?.id,
+        processingMsg.message_id,
+        undefined,
+        `✅ Импорт завершен успешно!\n\n📁 Файл: ${document.file_name}\n📊 Импортировано пользователей: ${userCount}\n🔄 YAML файл обновлен: ${this.accountsFilePath}`,
+        this.getBackToMenuKeyboard()
+      );
+      
+    } catch (error) {
+      ctx.reply(`❌ Ошибка импорта: ${error}`, this.getBackToMenuKeyboard());
+      this.logger.error(`Document import failed: ${error}`);
     }
   }
 
