@@ -772,3 +772,11 @@
 [32m[2025-09-24T17:10:02.561Z] [INFO] Message sent from makar4ik via Telegram bot interface[0m
 [31m[2025-09-24T17:10:31.223Z] [ERROR] User 184685711 not found[0m
 [32m[2025-09-24T17:20:23.710Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-09-24T17:32:47.309Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-24T17:32:47.311Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T17:32:47.321Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-09-24T17:32:47.330Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-24T17:32:47.330Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-24T17:32:47.331Z] [INFO] Loaded 20 accounts[0m
+[33m[2025-09-24T17:32:47.332Z] [WARN] No ALLOWED_USERS found in environment variables. Bot will be accessible to everyone.[0m
+[32m[2025-09-24T17:33:47.731Z] [INFO] Received SIGINT, shutting down gracefully...[0m

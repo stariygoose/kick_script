@@ -14,6 +14,7 @@ export class TelegramBot {
   private accountsFilePath: string = './accounts.yml';
   private userStates: Map<string, string> = new Map();
   private broadcastOptions: BroadcastOptions = { concurrency: 5, delayMs: 200 };
+  private allowedUsers: Set<number> = new Set();
 
   constructor(token: string, adminChatId: string, userManager: UserManager, logger: Logger) {
     this.bot = new Telegraf(token);
@@ -22,8 +23,49 @@ export class TelegramBot {
     this.adminChatId = adminChatId;
     this.botToken = token;
 
+    this.loadAllowedUsers();
+    this.setupMiddleware();
     this.setupCommands();
     this.setupCallbacks();
+  }
+
+  private loadAllowedUsers(): void {
+    const allowedUsersEnv = process.env.ALLOWED_USERS;
+    if (allowedUsersEnv) {
+      const userIds = allowedUsersEnv.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+      userIds.forEach(id => this.allowedUsers.add(id));
+      this.logger.info(`Loaded ${userIds.length} allowed users`);
+    } else {
+      this.logger.warn('No ALLOWED_USERS found in environment variables. Bot will be accessible to everyone.');
+    }
+  }
+
+  private setupMiddleware(): void {
+    // Middleware для проверки доступа
+    this.bot.use((ctx, next) => {
+      const userId = ctx.from?.id;
+      
+      if (!userId) {
+        this.logger.warn('Received message without user ID');
+        return;
+      }
+
+      // Если список разрешенных пользователей пуст, разрешаем всем
+      if (this.allowedUsers.size === 0) {
+        return next();
+      }
+
+      // Проверяем, есть ли пользователь в списке разрешенных
+      if (this.allowedUsers.has(userId)) {
+        return next();
+      }
+
+      // Логируем попытку несанкционированного доступа
+      this.logger.warn(`Unauthorized access attempt from user ID: ${userId}`);
+      
+      // Отправляем сообщение о запрете доступа
+      ctx.reply('🚫 У вас нет доступа к этому боту.');
+    });
   }
 
   private setupCommands(): void {
@@ -180,7 +222,19 @@ export class TelegramBot {
   }
 
   private isAdmin(ctx: Context): boolean {
-    return true;
+    const userId = ctx.from?.id;
+    
+    if (!userId) {
+      return false;
+    }
+
+    // Если список разрешенных пользователей пуст, разрешаем всем (обратная совместимость)
+    if (this.allowedUsers.size === 0) {
+      return true;
+    }
+
+    // Проверяем, есть ли пользователь в списке разрешенных
+    return this.allowedUsers.has(userId);
   }
 
   private async handleAddUser(ctx: Context): Promise<void> {
