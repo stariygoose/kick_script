@@ -1,41 +1,41 @@
+import dotenv from 'dotenv';
 import { UserManager } from "./managers/user-manager.js";
 import { Logger } from "./utils/logger.js";
-import { RetryHandler } from "./utils/retry-handler.js";
+import { TelegramBot } from "./bot/telegram-bot.js";
+
+dotenv.config();
 
 async function main() {
   const logger = new Logger('info');
   const userManager = new UserManager(logger);
-  const retryHandler = new RetryHandler(logger);
 
   try {
-    logger.info("Starting Kick message sender application");
+    logger.info("Starting Kick Bot Manager with Telegram interface");
+
+    const botToken = process.env.BOT_TOKEN;
+
+    if (!botToken) {
+      throw new Error('BOT_TOKEN must be set in .env file');
+    }
 
     await userManager.loadAccountsFromFile('./accounts.yml');
-
-    const chatId = "78046505";
-    const message = "test message";
-    const delayBetweenMessages = 1000;
-
-    logger.info(`Starting broadcast to chat ${chatId}`);
     logger.info(`Loaded ${userManager.getUserCount()} accounts`);
 
-    const startTime = Date.now();
+    const telegramBot = new TelegramBot(botToken, '', userManager, logger);
 
-    const result = await retryHandler.execute(
-      () => userManager.broadcastMessage(chatId, message, delayBetweenMessages),
-      { maxAttempts: 2, delayMs: 2000 },
-      'broadcast message'
-    );
+    process.on('SIGINT', () => {
+      logger.info('Received SIGINT, shutting down gracefully...');
+      telegramBot.stop();
+      process.exit(0);
+    });
 
-    const finishTime = Date.now();
-    const duration = (finishTime - startTime) / 1000;
+    process.on('SIGTERM', () => {
+      logger.info('Received SIGTERM, shutting down gracefully...');
+      telegramBot.stop();
+      process.exit(0);
+    });
 
-    logger.info(`Broadcast completed in ${duration} seconds`);
-    logger.info(`Results: ${result.sent} sent, ${result.failed} failed`);
-
-    if (result.failed > 0) {
-      logger.warn("Some messages failed to send. Check logs for details.");
-    }
+    await telegramBot.start();
 
   } catch (error) {
     logger.error(`Application error: ${error}`);
