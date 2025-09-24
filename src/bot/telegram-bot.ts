@@ -1,7 +1,7 @@
 import { Telegraf, Context, Markup } from 'telegraf';
 import { UserManager } from '../managers/user-manager.js';
 import { Logger } from '../utils/logger.js';
-import { UserConfig, StreamerConfig, BroadcastOptions } from '../types/interfaces.js';
+import { UserConfig, StreamerConfig, BroadcastOptions, SendMessageResponse } from '../types/interfaces.js';
 import { writeFileSync, readFileSync } from 'fs';
 
 export class TelegramBot {
@@ -263,6 +263,7 @@ export class TelegramBot {
 
     try {
       const statusMessage = await ctx.reply('🚀 Начинаю рассылку...');
+      const startTime = Date.now();
 
       const result = await this.userManager.broadcastMessageConcurrent(chatId, message, this.broadcastOptions, (progress) => {
         const percentage = Math.round((progress.currentIndex / progress.totalUsers) * 100);
@@ -294,18 +295,30 @@ export class TelegramBot {
         });
       });
 
-      let finalMessage = `✅ Рассылка завершена!\n\n📊 Итоги:\n📤 Отправлено: ${result.sent}\n❌ Ошибок: ${result.failed}`;
+      // Calculate execution time
+      const endTime = Date.now();
+      const executionTime = Math.round((endTime - startTime) / 1000);
 
-      // Add error details if there were any failures
+      // Prepare detailed summary
+      const total = result.sent + result.failed;
+      const successRate = total > 0 ? Math.round((result.sent / total) * 100) : 0;
+      
+      let finalMessage = `✅ Рассылка завершена!\n\n📊 ИТОГИ:\n`;
+      finalMessage += `👥 Всего пользователей: ${total}\n`;
+      finalMessage += `✅ Успешно отправлено: ${result.sent}\n`;
+      finalMessage += `❌ Ошибок: ${result.failed}\n`;
+      finalMessage += `📈 Успешность: ${successRate}%\n`;
+      finalMessage += `⏱️ Время выполнения: ${executionTime} секунд\n`;
+
+      // Add full error list if there were any failures
       if (result.failed > 0) {
         const failedResults = result.results.filter(r => !r.success);
         if (failedResults.length > 0) {
-          finalMessage += `\n\n🔍 Детали ошибок:`;
-          failedResults.forEach((error, index) => {
-            const shortError = error.error && error.error.length > 100
-              ? error.error.substring(0, 100) + '...'
-              : error.error;
-            finalMessage += `\n${index + 1}. ${shortError}`;
+          finalMessage += `\n🔍 ПОЛНЫЙ СПИСОК ОШИБОК:\n`;
+          
+          failedResults.forEach((error: SendMessageResponse, index: number) => {
+            const errorText = error.error || 'Неизвестная ошибка';
+            finalMessage += `${index + 1}. ${errorText}\n`;
           });
         }
       }
@@ -684,6 +697,7 @@ export class TelegramBot {
 
     try {
       const statusMessage = await ctx.reply('🚀 Начинаю рассылку...');
+      const startTime = Date.now();
 
       const result = await this.userManager.broadcastMessageConcurrent(chatId, message, this.broadcastOptions, (progress) => {
         const percentage = Math.round((progress.currentIndex / progress.totalUsers) * 100);
@@ -715,18 +729,30 @@ export class TelegramBot {
         });
       });
 
-      let finalMessage = `✅ Рассылка завершена!\n\n📊 Итоги:\n📤 Отправлено: ${result.sent}\n❌ Ошибок: ${result.failed}`;
+      // Calculate execution time
+      const endTime = Date.now();
+      const executionTime = Math.round((endTime - startTime) / 1000);
 
-      // Add error details if there were any failures
+      // Prepare detailed summary
+      const total = result.sent + result.failed;
+      const successRate = total > 0 ? Math.round((result.sent / total) * 100) : 0;
+      
+      let finalMessage = `✅ Рассылка завершена!\n\n📊 ИТОГИ:\n`;
+      finalMessage += `👥 Всего пользователей: ${total}\n`;
+      finalMessage += `✅ Успешно отправлено: ${result.sent}\n`;
+      finalMessage += `❌ Ошибок: ${result.failed}\n`;
+      finalMessage += `📈 Успешность: ${successRate}%\n`;
+      finalMessage += `⏱️ Время выполнения: ${executionTime} секунд\n`;
+
+      // Add full error list if there were any failures
       if (result.failed > 0) {
         const failedResults = result.results.filter(r => !r.success);
         if (failedResults.length > 0) {
-          finalMessage += `\n\n🔍 Детали ошибок:`;
-          failedResults.forEach((error, index) => {
-            const shortError = error.error && error.error.length > 100
-              ? error.error.substring(0, 100) + '...'
-              : error.error;
-            finalMessage += `\n${index + 1}. ${shortError}`;
+          finalMessage += `\n🔍 ПОЛНЫЙ СПИСОК ОШИБОК:\n`;
+          
+          failedResults.forEach((error: SendMessageResponse, index: number) => {
+            const errorText = error.error || 'Неизвестная ошибка';
+            finalMessage += `${index + 1}. ${errorText}\n`;
           });
         }
       }
@@ -807,6 +833,7 @@ export class TelegramBot {
   private getUserId(ctx: Context): string {
     return ctx.from?.id.toString() || 'unknown';
   }
+
 
   public stop(): void {
     this.bot.stop();
