@@ -4,3 +4,281 @@
 [2025-09-23T22:06:40.617Z] [INFO] Loaded 3 accounts into UserManager
 [2025-09-23T22:06:40.619Z] [INFO] Loaded 3 accounts
 [2025-09-23T22:06:48.893Z] [INFO] Received SIGINT, shutting down gracefully...
+[2025-09-23T22:58:18.332Z] [INFO] Starting Kick Bot Manager with Telegram interface
+[2025-09-23T22:58:18.359Z] [INFO] Reading accounts from file: ./accounts.txt
+[2025-09-23T22:58:18.390Z] [INFO] Successfully parsed 20 accounts
+[2025-09-23T22:58:18.396Z] [INFO] Loaded 20 accounts into UserManager
+[2025-09-23T22:58:18.398Z] [INFO] Started watching accounts file: ./accounts.txt
+[2025-09-23T22:58:18.400Z] [INFO] Loaded 20 accounts
+[2025-09-23T23:01:38.485Z] [INFO] Added user stariy_goose via Telegram bot
+[2025-09-23T23:01:38.488Z] [INFO] Accounts file ./accounts.txt changed, reloading accounts...
+[2025-09-23T23:01:38.489Z] [INFO] Reading accounts from file: ./accounts.txt
+[2025-09-23T23:01:38.508Z] [INFO] Successfully parsed 21 accounts
+[2025-09-23T23:01:38.513Z] [INFO] Loaded 21 accounts into UserManager
+[2025-09-23T23:02:39.400Z] [INFO] Broadcasting message to 21 users with 1000ms delay
+[2025-09-23T23:02:40.192Z] [INFO] Message sent successfully from makar4ik to chat 78046505
+[2025-09-23T23:02:41.926Z] [INFO] Message sent successfully from B_O_R_O_D_A to chat 78046505
+[2025-09-23T23:02:43.658Z] [INFO] Message sent successfully from Dudgelord to chat 78046505
+[2025-09-23T23:02:45.443Z] [INFO] Message sent successfully from mostkovoj148 to chat 78046505
+[2025-09-23T23:02:47.183Z] [INFO] Message sent successfully from TOP1_XIM3ABO to chat 78046505
+[2025-09-23T23:02:48.924Z] [INFO] Message sent successfully from Xsolla to chat 78046505
+[2025-09-23T23:02:50.666Z] [INFO] Message sent successfully from ArtemGotlib to chat 78046505
+[2025-09-23T23:02:52.415Z] [INFO] Message sent successfully from BarbiGirl52 to chat 78046505
+[2025-09-23T23:02:54.149Z] [INFO] Message sent successfully from Benzotape7 to chat 78046505
+[2025-09-23T23:02:55.870Z] [INFO] Message sent successfully from bloodmotherr to chat 78046505
+[2025-09-23T23:02:57.594Z] [INFO] Message sent successfully from BomjastiK to chat 78046505
+[2025-09-23T23:02:59.307Z] [INFO] Message sent successfully from BroToxi to chat 78046505
+[2025-09-23T23:03:01.061Z] [INFO] Message sent successfully from Bushhidoo to chat 78046505
+[2025-09-23T23:03:02.807Z] [INFO] Message sent successfully from CandyBunker to chat 78046505
+[2025-09-23T23:03:04.515Z] [INFO] Message sent successfully from MisterBarabolya to chat 78046505
+[2025-09-23T23:03:06.237Z] [INFO] Message sent successfully from dedisterr to chat 78046505
+[2025-09-23T23:03:07.972Z] [INFO] Message sent successfully from FireArcher1 to chat 78046505
+[2025-09-23T23:03:09.705Z] [INFO] Message sent successfully from gartobarboss to chat 78046505
+[2025-09-23T23:03:11.467Z] [INFO] Message sent successfully from thetusk_88 to chat 78046505
+[2025-09-23T23:03:13.311Z] [INFO] Message sent successfully from Jakijan to chat 78046505
+[2025-09-23T23:03:14.895Z] [INFO] Message sent successfully from stariy_goose to chat 78046505
+[2025-09-23T23:03:15.897Z] [INFO] Broadcast completed: 21 sent, 0 failed
+[2025-09-23T23:03:15.898Z] [INFO] Broadcast completed via Telegram bot: 21 sent, 0 failed
+[2025-09-23T23:04:07.056Z] [INFO] Reading accounts from file: ./accounts.txt
+[2025-09-23T23:04:07.070Z] [INFO] Successfully parsed 21 accounts
+[2025-09-23T23:04:07.072Z] [INFO] Loaded 21 accounts into UserManager
+[2025-09-23T23:04:07.073Z] [INFO] Stopped watching accounts file: ./accounts.txt
+[2025-09-23T23:04:07.073Z] [INFO] Started watching accounts file: ./accounts.txt
+[2025-09-23T23:04:07.074Z] [INFO] Accounts reloaded via Telegram bot: 21 accounts
+[2025-09-23T23:12:46.970Z] [INFO] Received SIGINT, shutting down gracefully...
+[32m[2025-09-23T23:20:38.286Z] [INFO] Starting Kick message sender application[0m
+[32m[2025-09-23T23:20:38.324Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-23T23:20:38.407Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-23T23:20:38.443Z] [INFO] Loaded 21 accounts and 21 streamers into UserManager[0m
+[32m[2025-09-23T23:20:38.444Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:20:38.448Z] [INFO] Starting broadcast to chat 78046505[0m
+[32m[2025-09-23T23:20:38.448Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-23T23:20:38.450Z] [INFO] Broadcasting message to 21 users with 1000ms delay[0m
+[31m[2025-09-23T23:20:38.915Z] [ERROR] Failed to send message from makar4ik: User is not authenticated.[0m
+[31m[2025-09-23T23:20:40.131Z] [ERROR] Failed to send message from B_O_R_O_D_A: User is not authenticated.[0m
+[31m[2025-09-23T23:20:41.963Z] [ERROR] Failed to send message from Dudgelord: User is not authenticated.[0m
+[31m[2025-09-23T23:20:43.179Z] [ERROR] Failed to send message from mostkovoj148: User is not authenticated.[0m
+[31m[2025-09-23T23:20:44.419Z] [ERROR] Failed to send message from TOP1_XIM3ABO: User is not authenticated.[0m
+[31m[2025-09-23T23:20:45.646Z] [ERROR] Failed to send message from Xsolla: User is not authenticated.[0m
+[31m[2025-09-23T23:20:46.877Z] [ERROR] Failed to send message from ArtemGotlib: User is not authenticated.[0m
+[31m[2025-09-23T23:20:48.211Z] [ERROR] Failed to send message from BarbiGirl52: User is not authenticated.[0m
+[31m[2025-09-23T23:20:49.441Z] [ERROR] Failed to send message from Benzotape7: User is not authenticated.[0m
+[31m[2025-09-23T23:20:50.657Z] [ERROR] Failed to send message from bloodmotherr: User is not authenticated.[0m
+[31m[2025-09-23T23:20:51.891Z] [ERROR] Failed to send message from BomjastiK: User is not authenticated.[0m
+[31m[2025-09-23T23:20:53.100Z] [ERROR] Failed to send message from BroToxi: User is not authenticated.[0m
+[31m[2025-09-23T23:20:54.349Z] [ERROR] Failed to send message from Bushhidoo: User is not authenticated.[0m
+[31m[2025-09-23T23:20:55.581Z] [ERROR] Failed to send message from CandyBunker: User is not authenticated.[0m
+[31m[2025-09-23T23:20:56.810Z] [ERROR] Failed to send message from MisterBarabolya: User is not authenticated.[0m
+[31m[2025-09-23T23:20:58.140Z] [ERROR] Failed to send message from dedisterr: User is not authenticated.[0m
+[31m[2025-09-23T23:20:59.354Z] [ERROR] Failed to send message from FireArcher1: User is not authenticated.[0m
+[31m[2025-09-23T23:21:00.596Z] [ERROR] Failed to send message from gartobarboss: User is not authenticated.[0m
+[31m[2025-09-23T23:21:01.828Z] [ERROR] Failed to send message from thetusk_88: User is not authenticated.[0m
+[31m[2025-09-23T23:21:03.054Z] [ERROR] Failed to send message from Jakijan: User is not authenticated.[0m
+[31m[2025-09-23T23:21:04.282Z] [ERROR] Failed to send message from stariy_goose: User is not authenticated.[0m
+[32m[2025-09-23T23:21:05.284Z] [INFO] Broadcast completed: 0 sent, 21 failed[0m
+[32m[2025-09-23T23:21:05.284Z] [INFO] Broadcast completed in 26.835 seconds[0m
+[32m[2025-09-23T23:21:05.285Z] [INFO] Results: 0 sent, 21 failed[0m
+[33m[2025-09-23T23:21:05.285Z] [WARN] Some messages failed to send. Check logs for details.[0m
+[32m[2025-09-23T23:22:28.888Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-23T23:22:28.917Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-23T23:22:28.996Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-23T23:22:29.028Z] [INFO] Loaded 21 accounts and 21 streamers into UserManager[0m
+[32m[2025-09-23T23:22:29.030Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:22:29.032Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-23T23:23:49.656Z] [INFO] Broadcasting message to 21 users with 1000ms delay[0m
+[31m[2025-09-23T23:23:49.981Z] [ERROR] Failed to send message from makar4ik: User is not authenticated.[0m
+[31m[2025-09-23T23:23:51.205Z] [ERROR] Failed to send message from B_O_R_O_D_A: User is not authenticated.[0m
+[31m[2025-09-23T23:23:52.422Z] [ERROR] Failed to send message from Dudgelord: User is not authenticated.[0m
+[31m[2025-09-23T23:23:53.754Z] [ERROR] Failed to send message from mostkovoj148: User is not authenticated.[0m
+[31m[2025-09-23T23:23:55.085Z] [ERROR] Failed to send message from TOP1_XIM3ABO: User is not authenticated.[0m
+[31m[2025-09-23T23:23:56.415Z] [ERROR] Failed to send message from Xsolla: User is not authenticated.[0m
+[31m[2025-09-23T23:23:57.645Z] [ERROR] Failed to send message from ArtemGotlib: User is not authenticated.[0m
+[31m[2025-09-23T23:23:58.976Z] [ERROR] Failed to send message from BarbiGirl52: User is not authenticated.[0m
+[31m[2025-09-23T23:24:00.205Z] [ERROR] Failed to send message from Benzotape7: User is not authenticated.[0m
+[31m[2025-09-23T23:24:01.433Z] [ERROR] Failed to send message from bloodmotherr: User is not authenticated.[0m
+[31m[2025-09-23T23:24:02.763Z] [ERROR] Failed to send message from BomjastiK: User is not authenticated.[0m
+[31m[2025-09-23T23:24:03.991Z] [ERROR] Failed to send message from BroToxi: User is not authenticated.[0m
+[31m[2025-09-23T23:24:05.222Z] [ERROR] Failed to send message from Bushhidoo: User is not authenticated.[0m
+[31m[2025-09-23T23:24:06.653Z] [ERROR] Failed to send message from CandyBunker: User is not authenticated.[0m
+[31m[2025-09-23T23:24:07.882Z] [ERROR] Failed to send message from MisterBarabolya: User is not authenticated.[0m
+[31m[2025-09-23T23:24:09.111Z] [ERROR] Failed to send message from dedisterr: User is not authenticated.[0m
+[31m[2025-09-23T23:24:10.340Z] [ERROR] Failed to send message from FireArcher1: User is not authenticated.[0m
+[31m[2025-09-23T23:24:11.568Z] [ERROR] Failed to send message from gartobarboss: User is not authenticated.[0m
+[31m[2025-09-23T23:24:12.900Z] [ERROR] Failed to send message from thetusk_88: User is not authenticated.[0m
+[31m[2025-09-23T23:24:14.231Z] [ERROR] Failed to send message from Jakijan: User is not authenticated.[0m
+[31m[2025-09-23T23:24:15.562Z] [ERROR] Failed to send message from stariy_goose: User is not authenticated.[0m
+[32m[2025-09-23T23:24:16.564Z] [INFO] Broadcast completed: 0 sent, 21 failed[0m
+[32m[2025-09-23T23:24:26.416Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-23T23:24:26.457Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-23T23:24:26.481Z] [INFO] Loaded 21 accounts and 21 streamers into UserManager[0m
+[32m[2025-09-23T23:24:26.481Z] [INFO] Stopped watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:24:26.482Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:24:26.484Z] [INFO] Accounts reloaded via Telegram bot: 21 accounts[0m
+[32m[2025-09-23T23:24:31.466Z] [INFO] Exported 21 users and 21 streamers to ./export_20250923T232431.yml[0m
+[32m[2025-09-23T23:24:31.467Z] [INFO] Exported data to YAML: ./export_20250923T232431.yml[0m
+[32m[2025-09-23T23:24:47.407Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-23T23:24:47.443Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-23T23:24:47.467Z] [INFO] Loaded 21 accounts and 21 streamers into UserManager[0m
+[32m[2025-09-23T23:24:47.468Z] [INFO] Stopped watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:24:47.468Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:24:47.469Z] [INFO] Accounts reloaded via Telegram bot: 21 accounts[0m
+[32m[2025-09-23T23:24:50.176Z] [INFO] Exported 21 users to text format: ./export_20250923T232450.txt[0m
+[32m[2025-09-23T23:24:50.176Z] [INFO] Exported users to text format: ./export_20250923T232450.txt[0m
+[32m[2025-09-23T23:25:49.879Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-09-23T23:36:24.110Z] [INFO] Starting Kick message sender application[0m
+[32m[2025-09-23T23:36:24.137Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-23T23:36:24.197Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-23T23:36:24.215Z] [INFO] Loaded 21 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-23T23:36:24.217Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:36:24.219Z] [INFO] Starting broadcast to chat 78046505[0m
+[32m[2025-09-23T23:36:24.219Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-23T23:36:24.221Z] [INFO] Broadcasting message to 21 users with 1000ms delay[0m
+[31m[2025-09-23T23:36:24.661Z] [ERROR] Failed to send message from makar4ik: User is not authenticated.[0m
+[31m[2025-09-23T23:36:25.973Z] [ERROR] Failed to send message from B_O_R_O_D_A: User is not authenticated.[0m
+[31m[2025-09-23T23:36:27.182Z] [ERROR] Failed to send message from Dudgelord: User is not authenticated.[0m
+[31m[2025-09-23T23:36:28.433Z] [ERROR] Failed to send message from mostkovoj148: User is not authenticated.[0m
+[31m[2025-09-23T23:36:29.761Z] [ERROR] Failed to send message from TOP1_XIM3ABO: User is not authenticated.[0m
+[31m[2025-09-23T23:36:30.994Z] [ERROR] Failed to send message from Xsolla: User is not authenticated.[0m
+[31m[2025-09-23T23:36:32.219Z] [ERROR] Failed to send message from ArtemGotlib: User is not authenticated.[0m
+[31m[2025-09-23T23:36:33.449Z] [ERROR] Failed to send message from BarbiGirl52: User is not authenticated.[0m
+[32m[2025-09-23T23:36:49.941Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-23T23:36:49.967Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-23T23:36:50.033Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-23T23:36:50.053Z] [INFO] Loaded 21 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-23T23:36:50.055Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:36:50.057Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-23T23:39:41.184Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-23T23:39:41.217Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-23T23:39:41.269Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-23T23:39:41.294Z] [INFO] Loaded 21 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-23T23:39:41.296Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:39:41.299Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-23T23:39:47.907Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-23T23:39:47.940Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-23T23:39:47.994Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-23T23:39:48.024Z] [INFO] Loaded 21 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-23T23:39:48.026Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:39:48.027Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-23T23:39:53.890Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-23T23:39:53.917Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-23T23:39:53.979Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-23T23:39:54.000Z] [INFO] Loaded 21 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-23T23:39:54.002Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:39:54.004Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-23T23:40:04.814Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-23T23:40:04.848Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-23T23:40:04.925Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-23T23:40:04.945Z] [INFO] Loaded 21 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-23T23:40:04.947Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:40:04.949Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-23T23:40:35.606Z] [INFO] Broadcasting message to 21 users with 1000ms delay[0m
+[31m[2025-09-23T23:40:35.904Z] [ERROR] Failed to send message from makar4ik: User is not authenticated.[0m
+[31m[2025-09-23T23:40:37.157Z] [ERROR] Failed to send message from B_O_R_O_D_A: User is not authenticated.[0m
+[31m[2025-09-23T23:40:38.488Z] [ERROR] Failed to send message from Dudgelord: User is not authenticated.[0m
+[31m[2025-09-23T23:40:39.700Z] [ERROR] Failed to send message from mostkovoj148: User is not authenticated.[0m
+[31m[2025-09-23T23:40:40.947Z] [ERROR] Failed to send message from TOP1_XIM3ABO: User is not authenticated.[0m
+[31m[2025-09-23T23:40:42.276Z] [ERROR] Failed to send message from Xsolla: User is not authenticated.[0m
+[31m[2025-09-23T23:40:43.502Z] [ERROR] Failed to send message from ArtemGotlib: User is not authenticated.[0m
+[31m[2025-09-23T23:40:44.733Z] [ERROR] Failed to send message from BarbiGirl52: User is not authenticated.[0m
+[31m[2025-09-23T23:40:45.962Z] [ERROR] Failed to send message from Benzotape7: User is not authenticated.[0m
+[31m[2025-09-23T23:40:47.175Z] [ERROR] Failed to send message from bloodmotherr: User is not authenticated.[0m
+[31m[2025-09-23T23:40:48.418Z] [ERROR] Failed to send message from BomjastiK: User is not authenticated.[0m
+[31m[2025-09-23T23:40:49.647Z] [ERROR] Failed to send message from BroToxi: User is not authenticated.[0m
+[31m[2025-09-23T23:40:50.876Z] [ERROR] Failed to send message from Bushhidoo: User is not authenticated.[0m
+[31m[2025-09-23T23:40:52.105Z] [ERROR] Failed to send message from CandyBunker: User is not authenticated.[0m
+[31m[2025-09-23T23:40:53.333Z] [ERROR] Failed to send message from MisterBarabolya: User is not authenticated.[0m
+[31m[2025-09-23T23:40:54.666Z] [ERROR] Failed to send message from dedisterr: User is not authenticated.[0m
+[31m[2025-09-23T23:40:55.880Z] [ERROR] Failed to send message from FireArcher1: User is not authenticated.[0m
+[31m[2025-09-23T23:40:57.124Z] [ERROR] Failed to send message from gartobarboss: User is not authenticated.[0m
+[31m[2025-09-23T23:40:58.454Z] [ERROR] Failed to send message from thetusk_88: User is not authenticated.[0m
+[31m[2025-09-23T23:41:00.196Z] [ERROR] Failed to send message from Jakijan: User is not authenticated.[0m
+[31m[2025-09-23T23:41:01.410Z] [ERROR] Failed to send message from stariy_goose: User is not authenticated.[0m
+[32m[2025-09-23T23:41:02.412Z] [INFO] Broadcast completed: 0 sent, 21 failed[0m
+[32m[2025-09-23T23:48:22.907Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-09-23T23:48:27.425Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-23T23:48:27.457Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-23T23:48:27.521Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-23T23:48:27.541Z] [INFO] Loaded 21 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-23T23:48:27.543Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:48:27.545Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-23T23:48:28.796Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-09-23T23:48:56.519Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-23T23:48:56.552Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-23T23:48:56.613Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-23T23:48:56.637Z] [INFO] Loaded 21 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-23T23:48:56.639Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:48:56.641Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-23T23:49:17.154Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-23T23:49:17.186Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-23T23:49:17.249Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-23T23:49:17.270Z] [INFO] Loaded 21 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-23T23:49:17.272Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:49:17.274Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-23T23:58:42.078Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-09-23T23:58:55.928Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-23T23:58:55.961Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-23T23:58:56.029Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-23T23:58:56.049Z] [INFO] Loaded 21 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-23T23:58:56.050Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-23T23:58:56.052Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-24T00:00:56.007Z] [INFO] Broadcasting message to 21 users with 1000ms delay[0m
+[31m[2025-09-24T00:00:56.330Z] [ERROR] Failed to send message from makar4ik: User is not authenticated.[0m
+[31m[2025-09-24T00:00:57.645Z] [ERROR] Failed to send message from B_O_R_O_D_A: User is not authenticated.[0m
+[31m[2025-09-24T00:00:58.874Z] [ERROR] Failed to send message from Dudgelord: User is not authenticated.[0m
+[31m[2025-09-24T00:01:00.104Z] [ERROR] Failed to send message from mostkovoj148: User is not authenticated.[0m
+[31m[2025-09-24T00:01:01.332Z] [ERROR] Failed to send message from TOP1_XIM3ABO: User is not authenticated.[0m
+[31m[2025-09-24T00:01:02.572Z] [ERROR] Failed to send message from Xsolla: User is not authenticated.[0m
+[31m[2025-09-24T00:01:03.892Z] [ERROR] Failed to send message from ArtemGotlib: User is not authenticated.[0m
+[31m[2025-09-24T00:01:05.123Z] [ERROR] Failed to send message from BarbiGirl52: User is not authenticated.[0m
+[31m[2025-09-24T00:01:06.452Z] [ERROR] Failed to send message from Benzotape7: User is not authenticated.[0m
+[31m[2025-09-24T00:01:07.782Z] [ERROR] Failed to send message from bloodmotherr: User is not authenticated.[0m
+[31m[2025-09-24T00:01:09.113Z] [ERROR] Failed to send message from BomjastiK: User is not authenticated.[0m
+[31m[2025-09-24T00:01:10.342Z] [ERROR] Failed to send message from BroToxi: User is not authenticated.[0m
+[31m[2025-09-24T00:01:11.570Z] [ERROR] Failed to send message from Bushhidoo: User is not authenticated.[0m
+[31m[2025-09-24T00:01:12.799Z] [ERROR] Failed to send message from CandyBunker: User is not authenticated.[0m
+[31m[2025-09-24T00:01:14.130Z] [ERROR] Failed to send message from MisterBarabolya: User is not authenticated.[0m
+[31m[2025-09-24T00:01:15.360Z] [ERROR] Failed to send message from dedisterr: User is not authenticated.[0m
+[31m[2025-09-24T00:01:16.587Z] [ERROR] Failed to send message from FireArcher1: User is not authenticated.[0m
+[31m[2025-09-24T00:01:17.921Z] [ERROR] Failed to send message from gartobarboss: User is not authenticated.[0m
+[31m[2025-09-24T00:01:19.149Z] [ERROR] Failed to send message from thetusk_88: User is not authenticated.[0m
+[31m[2025-09-24T00:01:20.377Z] [ERROR] Failed to send message from Jakijan: User is not authenticated.[0m
+[31m[2025-09-24T00:01:21.608Z] [ERROR] Failed to send message from stariy_goose: User is not authenticated.[0m
+[32m[2025-09-24T00:01:22.610Z] [INFO] Broadcast completed: 0 sent, 21 failed[0m
+[32m[2025-09-24T00:03:18.674Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-09-24T00:03:22.607Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-24T00:03:22.634Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T00:03:22.699Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-24T00:03:22.721Z] [INFO] Loaded 21 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-24T00:03:22.723Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-24T00:03:22.725Z] [INFO] Loaded 21 accounts[0m
+[32m[2025-09-24T00:03:32.004Z] [INFO] Broadcasting message to 21 users with 1000ms delay[0m
+[31m[2025-09-24T00:03:32.392Z] [ERROR] Failed to send message from makar4ik: User is not authenticated.[0m
+[31m[2025-09-24T00:03:33.701Z] [ERROR] Failed to send message from B_O_R_O_D_A: User is not authenticated.[0m
+[31m[2025-09-24T00:03:35.443Z] [ERROR] Failed to send message from Dudgelord: User is not authenticated.[0m
+[31m[2025-09-24T00:03:36.763Z] [ERROR] Failed to send message from mostkovoj148: User is not authenticated.[0m
+[31m[2025-09-24T00:03:38.001Z] [ERROR] Failed to send message from TOP1_XIM3ABO: User is not authenticated.[0m
+[31m[2025-09-24T00:03:39.336Z] [ERROR] Failed to send message from Xsolla: User is not authenticated.[0m
+[31m[2025-09-24T00:03:40.663Z] [ERROR] Failed to send message from ArtemGotlib: User is not authenticated.[0m
+[31m[2025-09-24T00:03:41.893Z] [ERROR] Failed to send message from BarbiGirl52: User is not authenticated.[0m
+[31m[2025-09-24T00:03:43.227Z] [ERROR] Failed to send message from Benzotape7: User is not authenticated.[0m
+[31m[2025-09-24T00:03:44.554Z] [ERROR] Failed to send message from bloodmotherr: User is not authenticated.[0m
+[31m[2025-09-24T00:03:45.869Z] [ERROR] Failed to send message from BomjastiK: User is not authenticated.[0m
+[31m[2025-09-24T00:03:47.628Z] [ERROR] Failed to send message from BroToxi: User is not authenticated.[0m
+[31m[2025-09-24T00:03:48.840Z] [ERROR] Failed to send message from Bushhidoo: User is not authenticated.[0m
+[31m[2025-09-24T00:03:50.084Z] [ERROR] Failed to send message from CandyBunker: User is not authenticated.[0m
+[31m[2025-09-24T00:03:51.416Z] [ERROR] Failed to send message from MisterBarabolya: User is not authenticated.[0m
+[31m[2025-09-24T00:03:52.644Z] [ERROR] Failed to send message from dedisterr: User is not authenticated.[0m
+[31m[2025-09-24T00:03:53.873Z] [ERROR] Failed to send message from FireArcher1: User is not authenticated.[0m
+[31m[2025-09-24T00:03:55.091Z] [ERROR] Failed to send message from gartobarboss: User is not authenticated.[0m
+[31m[2025-09-24T00:03:56.432Z] [ERROR] Failed to send message from thetusk_88: User is not authenticated.[0m
+[31m[2025-09-24T00:03:57.763Z] [ERROR] Failed to send message from Jakijan: User is not authenticated.[0m
+[31m[2025-09-24T00:03:58.992Z] [ERROR] Failed to send message from stariy_goose: User is not authenticated.[0m
+[32m[2025-09-24T00:03:59.994Z] [INFO] Broadcast completed: 0 sent, 21 failed[0m
+[32m[2025-09-24T00:05:33.027Z] [INFO] Exported 21 users and 2 streamers to ./accounts.yml[0m
+[32m[2025-09-24T00:05:33.028Z] [INFO] Exported data to YAML: ./accounts.yml[0m
+[32m[2025-09-24T00:05:33.028Z] [INFO] Updated accounts file: ./accounts.yml[0m
+[32m[2025-09-24T00:05:33.032Z] [INFO] Accounts file ./accounts.yml changed, reloading accounts...[0m
+[32m[2025-09-24T00:05:33.033Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T00:05:33.052Z] [INFO] Successfully parsed 21 accounts from YAML format[0m
+[32m[2025-09-24T00:05:33.074Z] [INFO] Loaded 21 accounts and 2 streamers into UserManager[0m
+[32m[2025-09-24T00:07:12.845Z] [INFO] Received SIGINT, shutting down gracefully...[0m

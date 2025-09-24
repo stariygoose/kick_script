@@ -1,5 +1,15 @@
 import winston from 'winston';
 
+const colorize = winston.format.colorize();
+
+const colors = {
+  debug: '\x1b[36m',    // cyan
+  info: '\x1b[32m',     // green
+  warn: '\x1b[33m',     // yellow
+  error: '\x1b[31m',    // red
+  reset: '\x1b[0m'      // reset
+};
+
 export class Logger {
   private winstonLogger: winston.Logger;
 
@@ -9,7 +19,8 @@ export class Logger {
       format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.printf(({ timestamp, level, message }) => {
-          return `[${timestamp}] [${level.toUpperCase()}] ${message}`;
+          const color = colors[level as keyof typeof colors] || colors.reset;
+          return `${color}[${timestamp}] [${level.toUpperCase()}] ${message}${colors.reset}`;
         })
       ),
       transports: [

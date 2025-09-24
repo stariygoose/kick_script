@@ -10,7 +10,7 @@ async function main() {
   try {
     logger.info("Starting Kick message sender application");
 
-    await userManager.loadAccountsFromFile('./accounts.txt');
+    await userManager.loadAccountsFromFile('./accounts.yml');
 
     const chatId = "78046505";
     const message = "test message";

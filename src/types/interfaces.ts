@@ -5,6 +5,16 @@ export interface UserConfig {
   proxy?: string;
 }
 
+export interface StreamerConfig {
+  nickname: string;
+  chatId: string;
+}
+
+export interface AccountsConfig {
+  streamers: Record<string, StreamerConfig>;
+  users: Record<string, UserConfig>;
+}
+
 export interface SendMessageResponse {
   success: boolean;
   data?: any;

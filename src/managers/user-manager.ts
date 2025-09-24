@@ -1,4 +1,4 @@
-import { UserConfig, SendMessageResponse } from '../types/interfaces.js';
+import { UserConfig, SendMessageResponse, StreamerConfig } from '../types/interfaces.js';
 import { KickSender } from '../controllers/kick-sender.controller.js';
 import { Logger } from '../utils/logger.js';
 import { AccountParser } from '../utils/account-parser.js';
@@ -6,6 +6,7 @@ import { watch, FSWatcher } from 'fs';
 
 export class UserManager {
   private senders = new Map<string, KickSender>();
+  private streamers = new Map<string, StreamerConfig>();
   private logger: Logger;
   private accountParser: AccountParser;
   private fileWatcher: FSWatcher | null = null;
@@ -31,9 +32,11 @@ export class UserManager {
 
   private reloadAccountsFromFile(filePath: string): void {
     const accounts = this.accountParser.parseAccountsFile(filePath);
+    const streamersData = this.accountParser.parseStreamersFromFile(filePath);
 
-    // Очищаем текущие аккаунты
+    // Очищаем текущие аккаунты и стримеров
     this.senders.clear();
+    this.streamers.clear();
 
     // Загружаем новые аккаунты
     for (const account of accounts) {
@@ -41,7 +44,12 @@ export class UserManager {
       this.senders.set(account.username, sender);
     }
 
-    this.logger.info(`Loaded ${accounts.length} accounts into UserManager`);
+    // Загружаем стримеров
+    for (const [key, streamer] of Object.entries(streamersData)) {
+      this.streamers.set(key, streamer);
+    }
+
+    this.logger.info(`Loaded ${accounts.length} accounts and ${Object.keys(streamersData).length} streamers into UserManager`);
   }
 
   public addUser(config: UserConfig): void {
@@ -87,14 +95,38 @@ export class UserManager {
     return await sender.sendMessage(chatId, message);
   }
 
-  public async broadcastMessage(chatId: string, message: string, delayMs: number = 0): Promise<{ sent: number; failed: number; results: SendMessageResponse[] }> {
+  public async broadcastMessage(
+    chatId: string,
+    message: string,
+    delayMs: number = 0,
+    progressCallback?: (progress: {
+      currentUser: string;
+      currentIndex: number;
+      totalUsers: number;
+      sent: number;
+      failed: number;
+      result?: SendMessageResponse;
+      streamerNickname?: string;
+    }) => void
+  ): Promise<{ sent: number; failed: number; results: SendMessageResponse[] }> {
     const results: SendMessageResponse[] = [];
     let sent = 0;
     let failed = 0;
+    const usernames = Array.from(this.senders.keys());
+    const totalUsers = usernames.length;
 
-    this.logger.info(`Broadcasting message to ${this.senders.size} users with ${delayMs}ms delay`);
+    // Find streamer nickname for the chatId
+    const streamerNickname = Array.from(this.streamers.values())
+      .find(streamer => streamer.chatId === chatId)?.nickname;
 
-    for (const [username, sender] of this.senders) {
+    this.logger.info(`Broadcasting message to ${totalUsers} users with ${delayMs}ms delay`);
+
+    for (let i = 0; i < usernames.length; i++) {
+      const username = usernames[i];
+      const sender = this.senders.get(username);
+
+      if (!sender) continue;
+
       try {
         const result = await sender.sendMessage(chatId, message);
         results.push(result);
@@ -105,7 +137,20 @@ export class UserManager {
           failed++;
         }
 
-        if (delayMs > 0 && this.senders.size > 1) {
+        // Call progress callback if provided
+        if (progressCallback) {
+          progressCallback({
+            currentUser: username,
+            currentIndex: i + 1,
+            totalUsers,
+            sent,
+            failed,
+            result,
+            streamerNickname
+          });
+        }
+
+        if (delayMs > 0 && totalUsers > 1) {
           await this.delay(delayMs);
         }
 
@@ -113,10 +158,23 @@ export class UserManager {
         failed++;
         const errorResult: SendMessageResponse = {
           success: false,
-          error: `Unexpected error for ${username}: ${error}`
+          error: `User: ${username} - Unexpected error: ${error}`
         };
         results.push(errorResult);
         this.logger.error(`Unexpected error sending message from ${username}: ${error}`);
+
+        // Call progress callback for error too
+        if (progressCallback) {
+          progressCallback({
+            currentUser: username,
+            currentIndex: i + 1,
+            totalUsers,
+            sent,
+            failed,
+            result: errorResult,
+            streamerNickname
+          });
+        }
       }
     }
 
@@ -170,6 +228,100 @@ export class UserManager {
 
   public getWatchedFilePath(): string | null {
     return this.watchedFilePath;
+  }
+
+  public getStreamers(): Map<string, StreamerConfig> {
+    return this.streamers;
+  }
+
+  public getStreamer(nickname: string): StreamerConfig | undefined {
+    return this.streamers.get(nickname);
+  }
+
+  public addStreamer(nickname: string, config: StreamerConfig): void {
+    this.streamers.set(nickname, config);
+    this.logger.debug(`Added streamer ${nickname} to UserManager`);
+  }
+
+  public removeStreamer(nickname: string): boolean {
+    const removed = this.streamers.delete(nickname);
+    if (removed) {
+      this.logger.debug(`Removed streamer ${nickname} from UserManager`);
+    } else {
+      this.logger.warn(`Streamer ${nickname} not found in UserManager`);
+    }
+    return removed;
+  }
+
+  public getAllStreamerNicknames(): string[] {
+    return Array.from(this.streamers.keys());
+  }
+
+  public exportToYaml(outputPath: string): void {
+    try {
+      const users: UserConfig[] = [];
+      for (const [username, sender] of this.senders) {
+        users.push(sender.getUserConfig());
+      }
+
+      const streamersObject: Record<string, {nickname: string, chatId: string}> = {};
+      for (const [key, streamer] of this.streamers) {
+        streamersObject[key] = {
+          nickname: streamer.nickname,
+          chatId: streamer.chatId
+        };
+      }
+
+      this.accountParser.exportToYaml(users, streamersObject, outputPath);
+      this.logger.info(`Exported data to YAML: ${outputPath}`);
+
+    } catch (error) {
+      this.logger.error(`Failed to export to YAML: ${error}`);
+      throw error;
+    }
+  }
+
+  public exportToText(outputPath: string): void {
+    try {
+      const users: UserConfig[] = [];
+      for (const [username, sender] of this.senders) {
+        users.push(sender.getUserConfig());
+      }
+
+      this.accountParser.exportToText(users, outputPath);
+      this.logger.info(`Exported users to text format: ${outputPath}`);
+
+    } catch (error) {
+      this.logger.error(`Failed to export to text format: ${error}`);
+      throw error;
+    }
+  }
+
+  public importFromFile(filePath: string): void {
+    try {
+      const { users, streamers } = this.accountParser.importFromFile(filePath);
+
+      // Clear existing data
+      this.senders.clear();
+      this.streamers.clear();
+
+      // Load users
+      for (const user of users) {
+        const sender = new KickSender(user, this.logger);
+        this.senders.set(user.username, sender);
+      }
+
+      // Load streamers
+      for (const [key, streamer] of Object.entries(streamers)) {
+        this.streamers.set(key, streamer);
+      }
+
+      this.logger.info(`Imported ${users.length} users and ${Object.keys(streamers).length} streamers from ${filePath}`);
+
+    } catch (error) {
+      this.logger.error(`Failed to import from file: ${error}`);
+      throw error;
+    }
   }
 
   private delay(ms: number): Promise<void> {

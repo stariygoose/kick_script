@@ -1,7 +1,7 @@
-import { Telegraf, Context } from 'telegraf';
+import { Telegraf, Context, Markup } from 'telegraf';
 import { UserManager } from '../managers/user-manager.js';
 import { Logger } from '../utils/logger.js';
-import { UserConfig } from '../types/interfaces.js';
+import { UserConfig, StreamerConfig } from '../types/interfaces.js';
 import { writeFileSync, readFileSync } from 'fs';
 
 export class TelegramBot {
@@ -9,7 +9,8 @@ export class TelegramBot {
   private userManager: UserManager;
   private logger: Logger;
   private adminChatId: string;
-  private accountsFilePath: string = './accounts.txt';
+  private accountsFilePath: string = './accounts.yml';
+  private userStates: Map<string, string> = new Map();
 
   constructor(token: string, adminChatId: string, userManager: UserManager, logger: Logger) {
     this.bot = new Telegraf(token);
@@ -18,25 +19,17 @@ export class TelegramBot {
     this.adminChatId = adminChatId;
 
     this.setupCommands();
+    this.setupCallbacks();
   }
 
   private setupCommands(): void {
     this.bot.start((ctx) => {
       if (!this.isAdmin(ctx)) return;
-
-      ctx.reply(`🤖 Kick Bot Manager запущен!
-
-Доступные команды:
-/adduser <username> <token> - Добавить пользователя
-/removeuser <username> - Удалить пользователя
-/searchuser <username> - Найти пользователя
-/listusers - Показать всех пользователей
-/broadcast <chatId> <message> - Отправить сообщение всем
-/sendmsg <username> <chatId> <message> - Отправить от конкретного пользователя
-/reload - Перезагрузить аккаунты из файла
-/stats - Статистика`);
+      this.showMainMenu(ctx);
     });
 
+    // Keep command interface for backward compatibility
+    this.bot.command('menu', (ctx) => this.showMainMenu(ctx));
     this.bot.command('adduser', (ctx) => this.handleAddUser(ctx));
     this.bot.command('removeuser', (ctx) => this.handleRemoveUser(ctx));
     this.bot.command('searchuser', (ctx) => this.handleSearchUser(ctx));
@@ -45,12 +38,94 @@ export class TelegramBot {
     this.bot.command('sendmsg', (ctx) => this.handleSendMessage(ctx));
     this.bot.command('reload', (ctx) => this.handleReload(ctx));
     this.bot.command('stats', (ctx) => this.handleStats(ctx));
+    this.bot.command('export', (ctx) => this.handleExport(ctx));
+    this.bot.command('import', (ctx) => this.handleImport(ctx));
 
     this.bot.catch((err: any, ctx) => {
       this.logger.error(`Bot error: ${err}`);
       if (this.isAdmin(ctx)) {
         ctx.reply(`❌ Ошибка: ${err.message || err}`);
       }
+    });
+
+    // Handle regular text messages for states
+    this.bot.on('text', (ctx) => this.handleTextInput(ctx));
+  }
+
+  private setupCallbacks(): void {
+    this.bot.action('main_menu', (ctx) => {
+      ctx.answerCbQuery();
+      this.showMainMenu(ctx);
+    });
+
+    this.bot.action('users_menu', (ctx) => {
+      ctx.answerCbQuery();
+      this.showUsersMenu(ctx);
+    });
+
+    this.bot.action('streamers_menu', (ctx) => {
+      ctx.answerCbQuery();
+      this.showStreamersMenu(ctx);
+    });
+
+    this.bot.action('broadcast_menu', (ctx) => {
+      ctx.answerCbQuery();
+      this.showBroadcastMenu(ctx);
+    });
+
+    this.bot.action('files_menu', (ctx) => {
+      ctx.answerCbQuery();
+      this.showFilesMenu(ctx);
+    });
+
+    this.bot.action('add_user', (ctx) => {
+      ctx.answerCbQuery();
+      this.startAddUserProcess(ctx);
+    });
+
+    this.bot.action('remove_user', (ctx) => {
+      ctx.answerCbQuery();
+      this.startRemoveUserProcess(ctx);
+    });
+
+    this.bot.action('list_users', (ctx) => {
+      ctx.answerCbQuery();
+      this.handleListUsers(ctx);
+    });
+
+    this.bot.action('add_streamer', (ctx) => {
+      ctx.answerCbQuery();
+      this.startAddStreamerProcess(ctx);
+    });
+
+    this.bot.action('list_streamers', (ctx) => {
+      ctx.answerCbQuery();
+      this.handleListStreamers(ctx);
+    });
+
+    this.bot.action('start_broadcast', (ctx) => {
+      ctx.answerCbQuery();
+      this.startBroadcastProcess(ctx);
+    });
+
+    this.bot.action('export_yaml', (ctx) => {
+      ctx.answerCbQuery();
+      this.handleExportYaml(ctx);
+    });
+
+    this.bot.action('export_text', (ctx) => {
+      ctx.answerCbQuery();
+      this.handleExportText(ctx);
+    });
+
+    this.bot.action('reload_accounts', (ctx) => {
+      ctx.answerCbQuery();
+      this.handleReload(ctx);
+    });
+
+    this.bot.action('show_stats', (ctx) => {
+      ctx.answerCbQuery();
+      this.handleStats(ctx);
     });
   }
 
@@ -77,7 +152,7 @@ export class TelegramBot {
       };
 
       this.userManager.addUser(userConfig);
-      this.appendToAccountsFile(username, token);
+      await this.updateAccountsFile();
 
       ctx.reply(`✅ Пользователь ${username} добавлен`);
       this.logger.info(`Added user ${username} via Telegram bot`);
@@ -104,7 +179,7 @@ export class TelegramBot {
       const removed = this.userManager.removeUser(username);
 
       if (removed) {
-        this.removeFromAccountsFile(username);
+        await this.updateAccountsFile();
         ctx.reply(`✅ Пользователь ${username} удален`);
         this.logger.info(`Removed user ${username} via Telegram bot`);
       } else {
@@ -165,11 +240,61 @@ export class TelegramBot {
     const message = args.slice(1).join(' ');
 
     try {
-      ctx.reply('🚀 Начинаю рассылку...');
+      const statusMessage = await ctx.reply('🚀 Начинаю рассылку...');
 
-      const result = await this.userManager.broadcastMessage(chatId, message, 1000);
+      const result = await this.userManager.broadcastMessage(chatId, message, 1000, (progress) => {
+        const percentage = Math.round((progress.currentIndex / progress.totalUsers) * 100);
+        const progressBar = this.createProgressBar(percentage);
 
-      ctx.reply(`✅ Рассылка завершена!\n📤 Отправлено: ${result.sent}\n❌ Ошибок: ${result.failed}`);
+        let statusText = `📢 Рассылка сообщений\n\n`;
+        statusText += `${progressBar} ${percentage}%\n\n`;
+        statusText += `👤 Текущий пользователь: ${progress.currentUser}\n`;
+        statusText += `📊 Прогресс: ${progress.currentIndex}/${progress.totalUsers}\n`;
+        statusText += `✅ Отправлено: ${progress.sent}\n`;
+        statusText += `❌ Ошибок: ${progress.failed}\n`;
+
+        if (progress.streamerNickname) {
+          statusText += `🎬 Стример: ${progress.streamerNickname}\n`;
+        }
+
+        if (progress.result && !progress.result.success) {
+          statusText += `\n⚠️ Последняя ошибка:\n${progress.result.error}\n`;
+        }
+
+        // Update status message
+        ctx.telegram.editMessageText(
+          ctx.chat?.id,
+          statusMessage.message_id,
+          undefined,
+          statusText
+        ).catch(() => {
+          // Ignore telegram rate limit errors
+        });
+      });
+
+      let finalMessage = `✅ Рассылка завершена!\n\n📊 Итоги:\n📤 Отправлено: ${result.sent}\n❌ Ошибок: ${result.failed}`;
+
+      // Add error details if there were any failures
+      if (result.failed > 0) {
+        const failedResults = result.results.filter(r => !r.success);
+        if (failedResults.length > 0) {
+          finalMessage += `\n\n🔍 Детали ошибок:`;
+          failedResults.forEach((error, index) => {
+            const shortError = error.error && error.error.length > 100
+              ? error.error.substring(0, 100) + '...'
+              : error.error;
+            finalMessage += `\n${index + 1}. ${shortError}`;
+          });
+        }
+      }
+
+      await ctx.telegram.editMessageText(
+        ctx.chat?.id,
+        statusMessage.message_id,
+        undefined,
+        finalMessage
+      );
+
       this.logger.info(`Broadcast completed via Telegram bot: ${result.sent} sent, ${result.failed} failed`);
 
     } catch (error) {
@@ -236,28 +361,13 @@ export class TelegramBot {
 🤖 Бот активен: ✅`);
   }
 
-  private appendToAccountsFile(username: string, token: string): void {
+  private async updateAccountsFile(): Promise<void> {
     try {
-      const newLine = `${username}=${token}\n`;
-      writeFileSync(this.accountsFilePath, newLine, { flag: 'a' });
+      // Export current state to the watched file
+      this.userManager.exportToYaml(this.accountsFilePath);
+      this.logger.info(`Updated accounts file: ${this.accountsFilePath}`);
     } catch (error) {
-      this.logger.error(`Failed to append to accounts file: ${error}`);
-      throw error;
-    }
-  }
-
-  private removeFromAccountsFile(username: string): void {
-    try {
-      const content = readFileSync(this.accountsFilePath, 'utf-8');
-      const lines = content.split('\n').filter(line => {
-        if (!line.trim()) return false;
-        const [user] = line.split('=');
-        return user.trim() !== username;
-      });
-
-      writeFileSync(this.accountsFilePath, lines.join('\n') + '\n');
-    } catch (error) {
-      this.logger.error(`Failed to remove from accounts file: ${error}`);
+      this.logger.error(`Failed to update accounts file: ${error}`);
       throw error;
     }
   }
@@ -271,6 +381,321 @@ export class TelegramBot {
       this.logger.error(`Failed to start Telegram bot: ${error}`);
       throw error;
     }
+  }
+
+  private showMainMenu(ctx: Context): void {
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.callback('👥 Управление пользователями', 'users_menu')],
+      [Markup.button.callback('🎬 Управление стримерами', 'streamers_menu')],
+      [Markup.button.callback('📢 Рассылка сообщений', 'broadcast_menu')],
+      [Markup.button.callback('📁 Файлы', 'files_menu')],
+      [Markup.button.callback('📊 Статистика', 'show_stats')],
+    ]);
+
+    const message = `🤖 Kick Bot Manager
+
+Выберите действие:`;
+
+    if (ctx.callbackQuery) {
+      ctx.editMessageText(message, keyboard);
+    } else {
+      ctx.reply(message, keyboard);
+    }
+  }
+
+  private showUsersMenu(ctx: Context): void {
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.callback('➕ Добавить пользователя', 'add_user')],
+      [Markup.button.callback('➖ Удалить пользователя', 'remove_user')],
+      [Markup.button.callback('📋 Список пользователей', 'list_users')],
+      [Markup.button.callback('⬅️ Назад', 'main_menu')],
+    ]);
+
+    const message = `👥 Управление пользователями
+
+Всего пользователей: ${this.userManager.getUserCount()}`;
+
+    ctx.editMessageText(message, keyboard);
+  }
+
+  private showStreamersMenu(ctx: Context): void {
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.callback('➕ Добавить стримера', 'add_streamer')],
+      [Markup.button.callback('📋 Список стримеров', 'list_streamers')],
+      [Markup.button.callback('⬅️ Назад', 'main_menu')],
+    ]);
+
+    const message = `🎬 Управление стримерами
+
+Всего стримеров: ${this.userManager.getAllStreamerNicknames().length}`;
+
+    ctx.editMessageText(message, keyboard);
+  }
+
+  private showBroadcastMenu(ctx: Context): void {
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.callback('📢 Начать рассылку', 'start_broadcast')],
+      [Markup.button.callback('⬅️ Назад', 'main_menu')],
+    ]);
+
+    const message = `📢 Рассылка сообщений
+
+Готово к рассылке пользователей: ${this.userManager.getUserCount()}`;
+
+    ctx.editMessageText(message, keyboard);
+  }
+
+  private showFilesMenu(ctx: Context): void {
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.callback('📤 Экспорт в YAML', 'export_yaml')],
+      [Markup.button.callback('📤 Экспорт в текст', 'export_text')],
+      [Markup.button.callback('🔄 Перезагрузить файл', 'reload_accounts')],
+      [Markup.button.callback('⬅️ Назад', 'main_menu')],
+    ]);
+
+    const message = `📁 Управление файлами
+
+Текущий файл: ${this.accountsFilePath}`;
+
+    ctx.editMessageText(message, keyboard);
+  }
+
+  private startAddUserProcess(ctx: Context): void {
+    const userId = this.getUserId(ctx);
+    this.userStates.set(userId, 'waiting_user_data');
+    ctx.editMessageText('➕ Добавление пользователя\n\nВведите данные в формате:\nusername token');
+  }
+
+  private startRemoveUserProcess(ctx: Context): void {
+    const userId = this.getUserId(ctx);
+    this.userStates.set(userId, 'waiting_username_to_remove');
+    ctx.editMessageText('➖ Удаление пользователя\n\nВведите username пользователя для удаления:');
+  }
+
+  private startAddStreamerProcess(ctx: Context): void {
+    const userId = this.getUserId(ctx);
+    this.userStates.set(userId, 'waiting_streamer_data');
+    ctx.editMessageText('➕ Добавление стримера\n\nВведите данные в формате:\nnickname chatId');
+  }
+
+  private startBroadcastProcess(ctx: Context): void {
+    const userId = this.getUserId(ctx);
+    this.userStates.set(userId, 'waiting_broadcast_data');
+    ctx.editMessageText('📢 Рассылка сообщений\n\nВведите данные в формате:\nchatId message');
+  }
+
+  private async handleTextInput(ctx: Context): Promise<void> {
+    if (!this.isAdmin(ctx)) return;
+
+    const userId = this.getUserId(ctx);
+    const state = this.userStates.get(userId);
+    const message = ctx.message as any;
+    const text = message?.text;
+
+    if (!state || !text) return;
+
+    this.userStates.delete(userId);
+
+    switch (state) {
+      case 'waiting_user_data':
+        await this.processAddUser(ctx, text);
+        break;
+      case 'waiting_username_to_remove':
+        await this.processRemoveUser(ctx, text);
+        break;
+      case 'waiting_streamer_data':
+        await this.processAddStreamer(ctx, text);
+        break;
+      case 'waiting_broadcast_data':
+        await this.processBroadcast(ctx, text);
+        break;
+    }
+  }
+
+  private async processAddUser(ctx: Context, input: string): Promise<void> {
+    const parts = input.trim().split(' ');
+    if (parts.length < 2) {
+      ctx.reply('❌ Неверный формат. Используйте: username token');
+      return;
+    }
+
+    const [username, token] = parts;
+    try {
+      const userConfig: UserConfig = { username, accessToken: token };
+      this.userManager.addUser(userConfig);
+      await this.updateAccountsFile();
+      ctx.reply(`✅ Пользователь ${username} добавлен`, this.getBackToMenuKeyboard());
+    } catch (error) {
+      ctx.reply(`❌ Ошибка добавления: ${error}`, this.getBackToMenuKeyboard());
+    }
+  }
+
+  private async processRemoveUser(ctx: Context, username: string): Promise<void> {
+    try {
+      const removed = this.userManager.removeUser(username.trim());
+      if (removed) {
+        await this.updateAccountsFile();
+        ctx.reply(`✅ Пользователь ${username} удален`, this.getBackToMenuKeyboard());
+      } else {
+        ctx.reply(`❌ Пользователь ${username} не найден`, this.getBackToMenuKeyboard());
+      }
+    } catch (error) {
+      ctx.reply(`❌ Ошибка удаления: ${error}`, this.getBackToMenuKeyboard());
+    }
+  }
+
+  private async processAddStreamer(ctx: Context, input: string): Promise<void> {
+    const parts = input.trim().split(' ');
+    if (parts.length < 2) {
+      ctx.reply('❌ Неверный формат. Используйте: nickname chatId');
+      return;
+    }
+
+    const [nickname, chatId] = parts;
+    try {
+      const streamerConfig: StreamerConfig = { nickname, chatId };
+      this.userManager.addStreamer(nickname, streamerConfig);
+      await this.updateAccountsFile();
+      ctx.reply(`✅ Стример ${nickname} добавлен`, this.getBackToMenuKeyboard());
+    } catch (error) {
+      ctx.reply(`❌ Ошибка добавления стримера: ${error}`, this.getBackToMenuKeyboard());
+    }
+  }
+
+  private async processBroadcast(ctx: Context, input: string): Promise<void> {
+    const parts = input.trim().split(' ');
+    if (parts.length < 2) {
+      ctx.reply('❌ Неверный формат. Используйте: chatId message');
+      return;
+    }
+
+    const chatId = parts[0];
+    const message = parts.slice(1).join(' ');
+
+    try {
+      const statusMessage = await ctx.reply('🚀 Начинаю рассылку...');
+
+      const result = await this.userManager.broadcastMessage(chatId, message, 1000, (progress) => {
+        const percentage = Math.round((progress.currentIndex / progress.totalUsers) * 100);
+        const progressBar = this.createProgressBar(percentage);
+
+        let statusText = `📢 Рассылка сообщений\n\n`;
+        statusText += `${progressBar} ${percentage}%\n\n`;
+        statusText += `👤 Текущий пользователь: ${progress.currentUser}\n`;
+        statusText += `📊 Прогресс: ${progress.currentIndex}/${progress.totalUsers}\n`;
+        statusText += `✅ Отправлено: ${progress.sent}\n`;
+        statusText += `❌ Ошибок: ${progress.failed}\n`;
+
+        if (progress.streamerNickname) {
+          statusText += `🎬 Стример: ${progress.streamerNickname}\n`;
+        }
+
+        if (progress.result && !progress.result.success) {
+          statusText += `\n⚠️ Последняя ошибка:\n${progress.result.error}\n`;
+        }
+
+        // Update status message
+        ctx.telegram.editMessageText(
+          ctx.chat?.id,
+          statusMessage.message_id,
+          undefined,
+          statusText
+        ).catch(() => {
+          // Ignore telegram rate limit errors
+        });
+      });
+
+      let finalMessage = `✅ Рассылка завершена!\n\n📊 Итоги:\n📤 Отправлено: ${result.sent}\n❌ Ошибок: ${result.failed}`;
+
+      // Add error details if there were any failures
+      if (result.failed > 0) {
+        const failedResults = result.results.filter(r => !r.success);
+        if (failedResults.length > 0) {
+          finalMessage += `\n\n🔍 Детали ошибок:`;
+          failedResults.forEach((error, index) => {
+            const shortError = error.error && error.error.length > 100
+              ? error.error.substring(0, 100) + '...'
+              : error.error;
+            finalMessage += `\n${index + 1}. ${shortError}`;
+          });
+        }
+      }
+
+      await ctx.telegram.editMessageText(
+        ctx.chat?.id,
+        statusMessage.message_id,
+        undefined,
+        finalMessage,
+        this.getBackToMenuKeyboard()
+      );
+
+    } catch (error) {
+      ctx.reply(`❌ Ошибка рассылки: ${error}`, this.getBackToMenuKeyboard());
+    }
+  }
+
+  private createProgressBar(percentage: number): string {
+    const totalBars = 10;
+    const filledBars = Math.round((percentage / 100) * totalBars);
+    const emptyBars = totalBars - filledBars;
+
+    return '█'.repeat(filledBars) + '░'.repeat(emptyBars);
+  }
+
+  private handleListStreamers(ctx: Context): void {
+    const streamers = this.userManager.getAllStreamerNicknames();
+
+    if (streamers.length === 0) {
+      ctx.reply('📋 Нет загруженных стримеров', this.getBackToMenuKeyboard());
+      return;
+    }
+
+    const streamerList = streamers.map((nickname, index) => {
+      const streamer = this.userManager.getStreamer(nickname);
+      return `${index + 1}. ${nickname} (${streamer?.chatId})`;
+    }).join('\n');
+
+    ctx.reply(`📋 Загружено стримеров (${streamers.length}):\n\n${streamerList}`, this.getBackToMenuKeyboard());
+  }
+
+  private handleExportYaml(ctx: Context): void {
+    try {
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+      const outputPath = `./export_${timestamp}.yml`;
+      this.userManager.exportToYaml(outputPath);
+      ctx.reply(`✅ Данные экспортированы в YAML: ${outputPath}`, this.getBackToMenuKeyboard());
+    } catch (error) {
+      ctx.reply(`❌ Ошибка экспорта: ${error}`, this.getBackToMenuKeyboard());
+    }
+  }
+
+  private handleExportText(ctx: Context): void {
+    try {
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+      const outputPath = `./export_${timestamp}.txt`;
+      this.userManager.exportToText(outputPath);
+      ctx.reply(`✅ Пользователи экспортированы в текст: ${outputPath}`, this.getBackToMenuKeyboard());
+    } catch (error) {
+      ctx.reply(`❌ Ошибка экспорта: ${error}`, this.getBackToMenuKeyboard());
+    }
+  }
+
+  private handleExport(ctx: Context): void {
+    this.showFilesMenu(ctx);
+  }
+
+  private handleImport(ctx: Context): void {
+    ctx.reply('📥 Импорт файлов\n\nИспользуйте команду: /import <путь_к_файлу>', this.getBackToMenuKeyboard());
+  }
+
+  private getBackToMenuKeyboard() {
+    return Markup.inlineKeyboard([
+      [Markup.button.callback('🏠 Главное меню', 'main_menu')]
+    ]);
+  }
+
+  private getUserId(ctx: Context): string {
+    return ctx.from?.id.toString() || 'unknown';
   }
 
   public stop(): void {

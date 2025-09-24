@@ -42,11 +42,12 @@ export class KickSender {
 
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || error.message || 'Unknown error';
+      const userErrorMsg = `User: ${this.config.username} - ${errorMsg}`;
       this.logger.error(`Failed to send message from ${this.config.username}: ${errorMsg}`);
 
       return {
         success: false,
-        error: errorMsg
+        error: userErrorMsg
       };
     }
   }
@@ -59,5 +60,9 @@ export class KickSender {
 
   public getUsername(): string {
     return this.config.username;
+  }
+
+  public getUserConfig(): UserConfig {
+    return { ...this.config };
   }
 }
