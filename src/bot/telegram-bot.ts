@@ -44,6 +44,8 @@ export class TelegramBot {
     this.bot.command('stats', (ctx) => this.handleStats(ctx));
     this.bot.command('setbroadcast', (ctx) => this.handleSetBroadcast(ctx));
     this.bot.command('export', (ctx) => this.handleExport(ctx));
+    this.bot.command('exporttxt', (ctx) => this.handleExportTxt(ctx));
+    this.bot.command('importyml', (ctx) => this.handleImportYml(ctx));
 
     this.bot.catch((err: any, ctx) => {
       this.logger.error(`Bot error: ${err}`);
@@ -158,6 +160,16 @@ export class TelegramBot {
     this.bot.action('export_config', (ctx) => {
       ctx.answerCbQuery();
       this.handleExport(ctx);
+    });
+
+    this.bot.action('export_txt', (ctx) => {
+      ctx.answerCbQuery();
+      this.handleExportTxt(ctx);
+    });
+
+    this.bot.action('import_yml', (ctx) => {
+      ctx.answerCbQuery();
+      this.startImportYmlProcess(ctx);
     });
   }
 
@@ -467,7 +479,7 @@ export class TelegramBot {
         source: exportPath,
         filename: `users_config_${new Date().toISOString().split('T')[0]}.yml`
       }, {
-        caption: `📤 Экспорт конфигурации пользователей\n\n👥 Всего пользователей: ${this.userManager.getUserCount()}\n🎬 Всего стримеров: ${this.userManager.getAllStreamerNicknames().length}`,
+        caption: `📤 Экспорт конфигурации пользователей (YML)\n\n👥 Всего пользователей: ${this.userManager.getUserCount()}\n🎬 Всего стримеров: ${this.userManager.getAllStreamerNicknames().length}`,
         ...this.getBackToMenuKeyboard()
       });
 
@@ -476,12 +488,117 @@ export class TelegramBot {
         unlinkSync(exportPath);
       }
 
-      this.logger.info(`Configuration exported and sent to user via Telegram bot`);
+      this.logger.info(`YML configuration exported and sent to user via Telegram bot`);
 
     } catch (error) {
-      ctx.reply(`❌ Ошибка экспорта: ${error}`, this.getBackToMenuKeyboard());
-      this.logger.error(`Failed to export configuration: ${error}`);
+      ctx.reply(`❌ Ошибка экспорта YML: ${error}`, this.getBackToMenuKeyboard());
+      this.logger.error(`Failed to export YML configuration: ${error}`);
     }
+  }
+
+  private async handleExportTxt(ctx: Context): Promise<void> {
+    if (!this.isAdmin(ctx)) return;
+
+    try {
+      const exportPath = `./export_${Date.now()}.txt`;
+      
+      // Экспортируем в текстовый формат
+      this.userManager.exportToTextFile(exportPath);
+      
+      // Отправляем файл пользователю
+      await ctx.replyWithDocument({
+        source: exportPath,
+        filename: `users_accounts_${new Date().toISOString().split('T')[0]}.txt`
+      }, {
+        caption: `📄 Экспорт аккаунтов в .txt формат\n\nФормат: username=userId|token\n👥 Всего пользователей: ${this.userManager.getUserCount()}`,
+        ...this.getBackToMenuKeyboard()
+      });
+
+      // Удаляем временный файл
+      if (existsSync(exportPath)) {
+        unlinkSync(exportPath);
+      }
+
+      this.logger.info(`TXT configuration exported and sent to user via Telegram bot`);
+
+    } catch (error) {
+      ctx.reply(`❌ Ошибка экспорта TXT: ${error}`, this.getBackToMenuKeyboard());
+      this.logger.error(`Failed to export TXT configuration: ${error}`);
+    }
+  }
+
+  private async handleImportYml(ctx: Context): Promise<void> {
+    if (!this.isAdmin(ctx)) return;
+
+    const userId = this.getUserId(ctx);
+    const state = this.userStates.get(userId);
+
+    if (state !== 'waiting_yml_upload') {
+      ctx.reply('❌ Неожиданная команда. Используйте кнопку "Импорт YML с перезаписью" в меню файлов.', this.getBackToMenuKeyboard());
+      return;
+    }
+
+    const message = ctx.message as any;
+    const document = message?.document;
+
+    if (!document) {
+      ctx.reply('❌ Не удалось получить файл', this.getBackToMenuKeyboard());
+      return;
+    }
+
+    this.userStates.delete(userId);
+
+    try {
+      // Показываем сообщение о процессе
+      const processingMsg = await ctx.reply('🔄 Обрабатываю YML файл и перезаписываю конфиг...');
+
+      // Получаем файл из Telegram
+      const fileInfo = await ctx.telegram.getFile(document.file_id);
+      
+      if (!fileInfo.file_path) {
+        ctx.reply('❌ Не удалось получить путь к файлу', this.getBackToMenuKeyboard());
+        return;
+      }
+
+      // Скачиваем файл
+      const fileUrl = `https://api.telegram.org/file/bot${this.botToken}/${fileInfo.file_path}`;
+      const response = await axios.get(fileUrl, { responseType: 'text' });
+      
+      // Сохраняем во временный файл
+      const tempPath = `./temp_import_${Date.now()}.yml`;
+      writeFileSync(tempPath, response.data, 'utf-8');
+
+      // Импортируем с перезаписью
+      this.userManager.importFromYmlAndOverwrite(tempPath, this.accountsFilePath);
+      
+      // Получаем статистику
+      const userCount = this.userManager.getUserCount();
+      const streamersCount = this.userManager.getAllStreamerNicknames().length;
+      
+      // Удаляем временный файл
+      if (existsSync(tempPath)) {
+        unlinkSync(tempPath);
+      }
+      
+      // Обновляем сообщение с результатом
+      await ctx.telegram.editMessageText(
+        ctx.chat?.id,
+        processingMsg.message_id,
+        undefined,
+        `✅ Импорт YML завершен успешно!\n\n📁 Файл: ${document.file_name}\n👥 Загружено пользователей: ${userCount}\n🎬 Загружено стримеров: ${streamersCount}\n🔄 Конфиг перезаписан: ${this.accountsFilePath}`,
+        this.getBackToMenuKeyboard()
+      );
+      
+    } catch (error) {
+      ctx.reply(`❌ Ошибка импорта YML: ${error}`, this.getBackToMenuKeyboard());
+      this.logger.error(`YML import failed: ${error}`);
+    }
+  }
+
+  private startImportYmlProcess(ctx: Context): void {
+    const userId = this.getUserId(ctx);
+    this.userStates.set(userId, 'waiting_yml_upload');
+    ctx.editMessageText('📥 Импорт YML с перезаписью\n\nЗагрузите YML файл с конфигурацией пользователей и стримеров.\n⚠️ ВНИМАНИЕ: Это полностью перезапишет текущий конфиг!\n\n📎 Прикрепите файл как документ');
   }
 
   private async updateAccountsFile(): Promise<void> {
@@ -521,7 +638,10 @@ export class TelegramBot {
 Выберите действие:`;
 
     if (ctx.callbackQuery) {
-      ctx.editMessageText(message, keyboard);
+      // Попытаемся отредактировать, если не получится - отправим новое сообщение
+      ctx.editMessageText(message, keyboard).catch(() => {
+        ctx.reply(message, keyboard);
+      });
     } else {
       ctx.reply(message, keyboard);
     }
@@ -539,7 +659,9 @@ export class TelegramBot {
 
 Всего пользователей: ${this.userManager.getUserCount()}`;
 
-    ctx.editMessageText(message, keyboard);
+    ctx.editMessageText(message, keyboard).catch(() => {
+      ctx.reply(message, keyboard);
+    });
   }
 
   private showStreamersMenu(ctx: Context): void {
@@ -554,7 +676,9 @@ export class TelegramBot {
 
 Всего стримеров: ${this.userManager.getAllStreamerNicknames().length}`;
 
-    ctx.editMessageText(message, keyboard);
+    ctx.editMessageText(message, keyboard).catch(() => {
+      ctx.reply(message, keyboard);
+    });
   }
 
   private showBroadcastMenu(ctx: Context): void {
@@ -567,13 +691,17 @@ export class TelegramBot {
 
 Готово к рассылке пользователей: ${this.userManager.getUserCount()}`;
 
-    ctx.editMessageText(message, keyboard);
+    ctx.editMessageText(message, keyboard).catch(() => {
+      ctx.reply(message, keyboard);
+    });
   }
 
   private showFilesMenu(ctx: Context): void {
     const keyboard = Markup.inlineKeyboard([
-      [Markup.button.callback('📥 Импорт из файла', 'import_file')],
-      [Markup.button.callback('📤 Экспорт конфига', 'export_config')],
+      [Markup.button.callback('📄 Импорт из .txt файла', 'import_file')],
+      [Markup.button.callback('📄 Экспорт в .txt', 'export_txt')],
+      [Markup.button.callback('📥 Импорт YML с перезаписью', 'import_yml')],
+      [Markup.button.callback('📤 Экспорт конфига YML', 'export_config')],
       [Markup.button.callback('🔄 Перезагрузить файл', 'reload_accounts')],
       [Markup.button.callback('⬅️ Назад', 'main_menu')],
     ]);
@@ -582,7 +710,9 @@ export class TelegramBot {
 
 Текущий файл: ${this.accountsFilePath}`;
 
-    ctx.editMessageText(message, keyboard);
+    ctx.editMessageText(message, keyboard).catch(() => {
+      ctx.reply(message, keyboard);
+    });
   }
 
   private showBroadcastSettings(ctx: Context): void {
@@ -605,7 +735,9 @@ export class TelegramBot {
 
 Выберите пресет или используйте /setbroadcast <потоки> <задержка>:`;
 
-    ctx.editMessageText(message, keyboard);
+    ctx.editMessageText(message, keyboard).catch(() => {
+      ctx.reply(message, keyboard);
+    });
   }
 
   private setBroadcastPreset(ctx: Context, options: BroadcastOptions, presetName: string): void {
@@ -658,7 +790,7 @@ export class TelegramBot {
   private startImportFileProcess(ctx: Context): void {
     const userId = this.getUserId(ctx);
     this.userStates.set(userId, 'waiting_file_upload');
-    ctx.editMessageText('📥 Импорт из файла\n\nЗагрузите текстовый файл с аккаунтами в формате:\nusername=userId|token\n\n📎 Прикрепите файл как документ');
+    ctx.editMessageText('📄 Импорт из .txt файла\n\nЗагрузите текстовый (.txt) файл с аккаунтами в формате:\nusername=userId|token\n\n📎 Прикрепите файл как документ');
   }
 
   private async handleTextInput(ctx: Context): Promise<void> {
@@ -868,8 +1000,15 @@ export class TelegramBot {
     const userId = this.getUserId(ctx);
     const state = this.userStates.get(userId);
 
-    if (state !== 'waiting_file_upload') return;
+    if (state === 'waiting_file_upload') {
+      await this.processTextFileUpload(ctx);
+    } else if (state === 'waiting_yml_upload') {
+      await this.handleImportYml(ctx);
+    }
+  }
 
+  private async processTextFileUpload(ctx: Context): Promise<void> {
+    const userId = this.getUserId(ctx);
     this.userStates.delete(userId);
 
     const message = ctx.message as any;

@@ -515,4 +515,51 @@ export class UserManager {
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
+
+  public exportToTextFile(outputPath: string): void {
+    try {
+      const users: UserConfig[] = [];
+      for (const [username, sender] of this.senders) {
+        users.push(sender.getUserConfig());
+      }
+
+      this.accountParser.exportToText(users, outputPath);
+      this.logger.info(`Exported users to text format: ${outputPath}`);
+
+    } catch (error) {
+      this.logger.error(`Failed to export to text format: ${error}`);
+      throw error;
+    }
+  }
+
+  public importFromYmlAndOverwrite(ymlFilePath: string, targetYmlPath: string): void {
+    try {
+      // Импортируем данные из исходного YML файла
+      const { users, streamers } = this.accountParser.importFromFile(ymlFilePath);
+      
+      // Очищаем текущие данные
+      this.senders.clear();
+      this.streamers.clear();
+
+      // Загружаем новые пользователи
+      for (const user of users) {
+        const sender = new KickSender(user, this.logger);
+        this.senders.set(user.username, sender);
+      }
+
+      // Загружаем новых стримеров
+      for (const [key, streamer] of Object.entries(streamers)) {
+        this.streamers.set(key, streamer);
+      }
+
+      // Перезаписываем целевой YML файл
+      this.exportToYaml(targetYmlPath);
+      
+      this.logger.info(`Imported ${users.length} users and ${Object.keys(streamers).length} streamers from ${ymlFilePath} and overwrote ${targetYmlPath}`);
+
+    } catch (error) {
+      this.logger.error(`Failed to import from YML and overwrite: ${error}`);
+      throw error;
+    }
+  }
 }
