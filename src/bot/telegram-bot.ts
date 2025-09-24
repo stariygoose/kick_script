@@ -46,6 +46,7 @@ export class TelegramBot {
     this.bot.command('export', (ctx) => this.handleExport(ctx));
     this.bot.command('exporttxt', (ctx) => this.handleExportTxt(ctx));
     this.bot.command('importyml', (ctx) => this.handleImportYml(ctx));
+    this.bot.command('sendas', (ctx) => this.handleSendAs(ctx));
 
     this.bot.catch((err: any, ctx) => {
       this.logger.error(`Bot error: ${err}`);
@@ -170,6 +171,11 @@ export class TelegramBot {
     this.bot.action('import_yml', (ctx) => {
       ctx.answerCbQuery();
       this.startImportYmlProcess(ctx);
+    });
+
+    this.bot.action('send_as_user', (ctx) => {
+      ctx.answerCbQuery();
+      this.startSendAsUserProcess(ctx);
     });
   }
 
@@ -628,6 +634,7 @@ export class TelegramBot {
       [Markup.button.callback('👥 Управление пользователями', 'users_menu')],
       [Markup.button.callback('🎬 Управление стримерами', 'streamers_menu')],
       [Markup.button.callback('📢 Рассылка сообщений', 'broadcast_menu')],
+      [Markup.button.callback('💬 Отправить от пользователя', 'send_as_user')],
       [Markup.button.callback('⚡ Настройки рассылки', 'broadcast_settings')],
       [Markup.button.callback('📁 Файлы', 'files_menu')],
       [Markup.button.callback('📊 Статистика', 'show_stats')],
@@ -805,21 +812,24 @@ export class TelegramBot {
 
     this.userStates.delete(userId);
 
-    switch (state) {
-      case 'waiting_user_data':
+    switch (true) {
+      case state === 'waiting_user_data':
         await this.processAddUser(ctx, text);
         break;
-      case 'waiting_username_to_remove':
+      case state === 'waiting_username_to_remove':
         await this.processRemoveUser(ctx, text);
         break;
-      case 'waiting_streamer_data':
+      case state === 'waiting_streamer_data':
         await this.processAddStreamer(ctx, text);
         break;
-      case 'waiting_streamer_to_remove':
+      case state === 'waiting_streamer_to_remove':
         await this.processRemoveStreamer(ctx, text);
         break;
-      case 'waiting_broadcast_data':
+      case state === 'waiting_broadcast_data':
         await this.processBroadcast(ctx, text);
+        break;
+      case state === 'waiting_send_as_user_data':
+        await this.processSendAsUserData(ctx, text);
         break;
     }
   }
@@ -977,6 +987,33 @@ export class TelegramBot {
     }
   }
 
+  private async processSendAsUserData(ctx: Context, input: string): Promise<void> {
+    const parts = input.trim().split(' ');
+    if (parts.length < 3) {
+      ctx.reply('❌ Неверный формат. Используйте: username chatId message', this.getBackToMenuKeyboard());
+      return;
+    }
+
+    const username = parts[0];
+    const chatId = parts[1];
+    const message = parts.slice(2).join(' ');
+
+    try {
+      const result = await this.userManager.sendMessageFromUser(username, chatId, message);
+
+      if (result.success) {
+        ctx.reply(`✅ Сообщение отправлено от пользователя ${username}`, this.getBackToMenuKeyboard());
+        this.logger.info(`Message sent from ${username} via Telegram bot interface`);
+      } else {
+        ctx.reply(`❌ Ошибка отправки от ${username}: ${result.error}`, this.getBackToMenuKeyboard());
+      }
+
+    } catch (error) {
+      ctx.reply(`❌ Ошибка: ${error}`, this.getBackToMenuKeyboard());
+      this.logger.error(`Failed to send message from ${username} via Telegram bot interface: ${error}`);
+    }
+  }
+
   private async processImportFile(ctx: Context, filePath: string): Promise<void> {
     try {
       const trimmedPath = filePath.trim();
@@ -1092,6 +1129,43 @@ export class TelegramBot {
     return ctx.from?.id.toString() || 'unknown';
   }
 
+  private async handleSendAs(ctx: Context): Promise<void> {
+    if (!this.isAdmin(ctx)) return;
+
+    const message = ctx.message as any;
+    const args = message?.text?.split(' ').slice(1);
+    if (!args || args.length < 3) {
+      ctx.reply('❌ Формат: /sendas <username> <chatId> <message>');
+      return;
+    }
+
+    const username = args[0];
+    const chatId = args[1];
+    const messageText = args.slice(2).join(' ');
+
+    try {
+      const result = await this.userManager.sendMessageFromUser(username, chatId, messageText);
+
+      if (result.success) {
+        ctx.reply(`✅ Сообщение отправлено от ${username}`);
+        this.logger.info(`Message sent from ${username} via Telegram bot`);
+      } else {
+        ctx.reply(`❌ Ошибка отправки от ${username}: ${result.error}`);
+      }
+
+    } catch (error) {
+      ctx.reply(`❌ Ошибка: ${error}`);
+      this.logger.error(`Failed to send message from ${username} via Telegram bot: ${error}`);
+    }
+  }
+
+  private startSendAsUserProcess(ctx: Context): void {
+    const userId = this.getUserId(ctx);
+    this.userStates.set(userId, 'waiting_send_as_user_data');
+    
+    const userCount = this.userManager.getUserCount();
+    ctx.editMessageText(`💬 Отправка сообщения от пользователя\n\nВведите данные в формате:\nusername chatId message\n\nПример: makar4ik 78046505 Привет!\n\n👥 Доступно пользователей: ${userCount}`);
+  }
 
   public stop(): void {
     this.bot.stop();

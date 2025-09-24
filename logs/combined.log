@@ -750,3 +750,24 @@
 [32m[2025-09-24T16:58:01.887Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
 [32m[2025-09-24T16:58:01.887Z] [INFO] Started watching accounts file: ./accounts.yml[0m
 [32m[2025-09-24T16:58:01.887Z] [INFO] Loaded 20 accounts[0m
+[32m[2025-09-24T17:03:54.825Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-09-24T17:03:57.551Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-24T17:03:57.553Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T17:03:57.562Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-09-24T17:03:57.572Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-24T17:03:57.572Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-24T17:03:57.573Z] [INFO] Loaded 20 accounts[0m
+[32m[2025-09-24T17:08:24.047Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-09-24T17:08:26.807Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-09-24T17:08:26.808Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-09-24T17:08:26.817Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-09-24T17:08:26.826Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
+[32m[2025-09-24T17:08:26.827Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-09-24T17:08:26.827Z] [INFO] Loaded 20 accounts[0m
+[32m[2025-09-24T17:09:09.608Z] [INFO] Message sent successfully from makar4ik to chat 78046505[0m
+[32m[2025-09-24T17:09:09.608Z] [INFO] Message sent from makar4ik via Telegram bot interface[0m
+[32m[2025-09-24T17:09:42.098Z] [INFO] Message sent successfully from makar4ik to chat 78046505[0m
+[32m[2025-09-24T17:09:42.098Z] [INFO] Message sent from makar4ik via Telegram bot interface[0m
+[32m[2025-09-24T17:10:02.560Z] [INFO] Message sent successfully from makar4ik to chat 78046505[0m
+[32m[2025-09-24T17:10:02.561Z] [INFO] Message sent from makar4ik via Telegram bot interface[0m
+[31m[2025-09-24T17:10:31.223Z] [ERROR] User 184685711 not found[0m
