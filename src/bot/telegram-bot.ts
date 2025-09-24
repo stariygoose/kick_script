@@ -3,6 +3,7 @@ import { UserManager } from '../managers/user-manager.js';
 import { Logger } from '../utils/logger.js';
 import { UserConfig, StreamerConfig, BroadcastOptions, SendMessageResponse } from '../types/interfaces.js';
 import { writeFileSync, readFileSync, existsSync, unlinkSync } from 'fs';
+import path from 'path';
 import axios from 'axios';
 
 export class TelegramBot {
@@ -13,8 +14,12 @@ export class TelegramBot {
   private botToken: string;
   private accountsFilePath: string = './accounts.yml';
   private userStates: Map<string, string> = new Map();
-  private broadcastOptions: BroadcastOptions = { concurrency: 5, delayMs: 200 };
+  private broadcastOptions: BroadcastOptions = { concurrency: 2, delayMs: 1000 };
   private allowedUsers: Set<number> = new Set();
+  private lastMessageUpdate: number = 0;
+  private messageUpdateThrottle: number = 5000;
+  private activeBroadcasts: Map<string, { shouldStop: boolean }> = new Map();
+  private updateCounter: number = 0;
 
   constructor(token: string, adminChatId: string, userManager: UserManager, logger: Logger) {
     this.bot = new Telegraf(token);
@@ -187,17 +192,17 @@ export class TelegramBot {
 
     this.bot.action('set_fast', (ctx) => {
       ctx.answerCbQuery();
-      this.setBroadcastPreset(ctx, { concurrency: 10, delayMs: 100 }, 'Быстрый');
+      this.setBroadcastPreset(ctx, { concurrency: 3, delayMs: 300 }, 'Быстрый');
     });
 
     this.bot.action('set_balanced', (ctx) => {
       ctx.answerCbQuery();
-      this.setBroadcastPreset(ctx, { concurrency: 5, delayMs: 200 }, 'Балансированный');
+      this.setBroadcastPreset(ctx, { concurrency: 3, delayMs: 500 }, 'Балансированный');
     });
 
     this.bot.action('set_safe', (ctx) => {
       ctx.answerCbQuery();
-      this.setBroadcastPreset(ctx, { concurrency: 2, delayMs: 500 }, 'Безопасный');
+      this.setBroadcastPreset(ctx, { concurrency: 1, delayMs: 2000 }, 'Безопасный');
     });
 
     this.bot.action('export_config', (ctx) => {
@@ -218,6 +223,17 @@ export class TelegramBot {
     this.bot.action('send_as_user', (ctx) => {
       ctx.answerCbQuery();
       this.startSendAsUserProcess(ctx);
+    });
+
+    this.bot.action(/^stop_broadcast_(.+)$/, (ctx) => {
+      const broadcastId = ctx.match![1];
+      this.logger.info(`Stop callback received for broadcast: ${broadcastId}`);
+      this.handleStopBroadcast(ctx, broadcastId);
+      
+      // Answer callback query with timeout protection
+      ctx.answerCbQuery('Останавливаем рассылку...').catch((error) => {
+        this.logger.warn(`Failed to answer callback query: ${error.message}`);
+      });
     });
   }
 
@@ -336,18 +352,29 @@ export class TelegramBot {
     const broadcastMsg = ctx.message as any;
     const args = broadcastMsg?.text?.split(' ').slice(1);
     if (!args || args.length < 2) {
-      ctx.reply('❌ Формат: /broadcast <chatId> <message>');
+      ctx.reply('❌ Формат: /broadcast <streamer_nickname> <message>');
       return;
     }
 
-    const chatId = args[0];
+    const streamerNickname = args[0];
     const message = args.slice(1).join(' ');
 
+    const broadcastId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    this.activeBroadcasts.set(broadcastId, { shouldStop: false });
+    this.updateCounter = 0; // Reset counter for new broadcast
+    this.logger.info(`Created broadcast ${broadcastId}`);
+
     try {
-      const statusMessage = await ctx.reply('🚀 Начинаю рассылку...');
+
+      const stopKeyboard = Markup.inlineKeyboard([
+        [Markup.button.callback('🛑 ОСТАНОВИТЬ РАССЫЛКУ', `stop_broadcast_${broadcastId}`)]
+      ]);
+      this.logger.info(`Created stop button for broadcast ${broadcastId}`);
+
+      const statusMessage = await ctx.reply('🚀 Начинаю рассылку...', stopKeyboard);
       const startTime = Date.now();
 
-      const result = await this.userManager.broadcastMessageConcurrent(chatId, message, this.broadcastOptions, (progress) => {
+      const result = await this.userManager.broadcastMessageConcurrent(streamerNickname, message, this.broadcastOptions, () => this.getBroadcastStopStatus(broadcastId), (progress) => {
         const percentage = Math.round((progress.currentIndex / progress.totalUsers) * 100);
         const progressBar = this.createProgressBar(percentage);
 
@@ -366,15 +393,11 @@ export class TelegramBot {
           statusText += `\n⚠️ Последняя ошибка:\n${progress.result.error}\n`;
         }
 
-        // Update status message
-        ctx.telegram.editMessageText(
-          ctx.chat?.id,
-          statusMessage.message_id,
-          undefined,
-          statusText
-        ).catch(() => {
-          // Ignore telegram rate limit errors
-        });
+        // Update status message with rate limiting protection (only every 5th update)
+        this.updateCounter++;
+        if (this.updateCounter % 5 === 0) {
+          this.updateTelegramMessage(ctx, statusMessage.message_id, statusText, stopKeyboard);
+        }
       });
 
       // Calculate execution time
@@ -385,24 +408,20 @@ export class TelegramBot {
       const total = result.sent + result.failed;
       const successRate = total > 0 ? Math.round((result.sent / total) * 100) : 0;
       
-      let finalMessage = `✅ Рассылка завершена!\n\n📊 ИТОГИ:\n`;
+      let finalMessage = result.stopped 
+        ? `🛑 Рассылка остановлена!\n\n📊 ИТОГИ:\n`
+        : `✅ Рассылка завершена!\n\n📊 ИТОГИ:\n`;
+      
       finalMessage += `👥 Всего пользователей: ${total}\n`;
       finalMessage += `✅ Успешно отправлено: ${result.sent}\n`;
       finalMessage += `❌ Ошибок: ${result.failed}\n`;
       finalMessage += `📈 Успешность: ${successRate}%\n`;
       finalMessage += `⏱️ Время выполнения: ${executionTime} секунд\n`;
 
-      // Add full error list if there were any failures
+      // Create error file if there were failures
+      let errorFile = null;
       if (result.failed > 0) {
-        const failedResults = result.results.filter(r => !r.success);
-        if (failedResults.length > 0) {
-          finalMessage += `\n🔍 ПОЛНЫЙ СПИСОК ОШИБОК:\n`;
-          
-          failedResults.forEach((error: SendMessageResponse, index: number) => {
-            const errorText = error.error || 'Неизвестная ошибка';
-            finalMessage += `${index + 1}. ${errorText}\n`;
-          });
-        }
+        errorFile = await this.createErrorFile(result.results);
       }
 
       await ctx.telegram.editMessageText(
@@ -412,9 +431,19 @@ export class TelegramBot {
         finalMessage
       );
 
+      // Send error file if errors occurred
+      if (errorFile) {
+        await this.sendErrorFile(ctx, errorFile);
+      }
+
+      // Clean up broadcast tracking
+      this.activeBroadcasts.delete(broadcastId);
+
       this.logger.info(`Broadcast completed via Telegram bot: ${result.sent} sent, ${result.failed} failed`);
 
     } catch (error) {
+      // Clean up broadcast tracking on error
+      this.activeBroadcasts.delete(broadcastId);
       ctx.reply(`❌ Ошибка рассылки: ${error}`);
       this.logger.error(`Broadcast failed via Telegram bot: ${error}`);
     }
@@ -426,16 +455,16 @@ export class TelegramBot {
     const sendMsg = ctx.message as any;
     const args = sendMsg?.text?.split(' ').slice(1);
     if (!args || args.length < 3) {
-      ctx.reply('❌ Формат: /sendmsg <username> <chatId> <message>');
+      ctx.reply('❌ Формат: /sendmsg <username> <streamer_nickname> <message>');
       return;
     }
 
     const username = args[0];
-    const chatId = args[1];
+    const streamerNickname = args[1];
     const message = args.slice(2).join(' ');
 
     try {
-      const result = await this.userManager.sendMessageFromUser(username, chatId, message);
+      const result = await this.userManager.sendMessageFromUser(username, streamerNickname, message);
 
       if (result.success) {
         ctx.reply(`✅ Сообщение отправлено от ${username}`);
@@ -781,9 +810,9 @@ export class TelegramBot {
     const estimatedTime = Math.ceil(userCount / (this.broadcastOptions.concurrency || 1)) * ((this.broadcastOptions.delayMs || 0) / 1000);
 
     const keyboard = Markup.inlineKeyboard([
-      [Markup.button.callback('⚡ Быстро (10 потоков, 100ms)', 'set_fast')],
-      [Markup.button.callback('⚖️ Балансированно (5 потоков, 200ms)', 'set_balanced')],
-      [Markup.button.callback('🐌 Безопасно (2 потока, 500ms)', 'set_safe')],
+      [Markup.button.callback('⚡ Быстро (3 потока, 300ms)', 'set_fast')],
+      [Markup.button.callback('⚖️ Балансированно (3 потока, 500ms)', 'set_balanced')],
+      [Markup.button.callback('🐌 Безопасно (1 поток, 2000ms)', 'set_safe')],
       [Markup.button.callback('⬅️ Назад', 'main_menu')],
     ]);
 
@@ -845,7 +874,11 @@ export class TelegramBot {
   private startBroadcastProcess(ctx: Context): void {
     const userId = this.getUserId(ctx);
     this.userStates.set(userId, 'waiting_broadcast_data');
-    ctx.editMessageText('📢 Рассылка сообщений\n\nВведите данные в формате:\nchatId message');
+    
+    const streamers = this.userManager.getAllStreamerNicknames();
+    const streamersList = streamers.length > 0 ? `\n\n📺 Доступные стримеры:\n${streamers.join(', ')}` : '';
+    
+    ctx.editMessageText(`📢 Рассылка сообщений\n\nВведите данные в формате:\nstreamer_nickname message${streamersList}`);
   }
 
   private startImportFileProcess(ctx: Context): void {
@@ -959,18 +992,29 @@ export class TelegramBot {
   private async processBroadcast(ctx: Context, input: string): Promise<void> {
     const parts = input.trim().split(' ');
     if (parts.length < 2) {
-      ctx.reply('❌ Неверный формат. Используйте: chatId message');
+      ctx.reply('❌ Неверный формат. Используйте: streamer_nickname message');
       return;
     }
 
-    const chatId = parts[0];
+    const streamerNickname = parts[0];
     const message = parts.slice(1).join(' ');
 
+    const broadcastId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    this.activeBroadcasts.set(broadcastId, { shouldStop: false });
+    this.updateCounter = 0; // Reset counter for new broadcast
+    this.logger.info(`Created broadcast ${broadcastId}`);
+
     try {
-      const statusMessage = await ctx.reply('🚀 Начинаю рассылку...');
+
+      const stopKeyboard = Markup.inlineKeyboard([
+        [Markup.button.callback('🛑 ОСТАНОВИТЬ РАССЫЛКУ', `stop_broadcast_${broadcastId}`)]
+      ]);
+      this.logger.info(`Created stop button for broadcast ${broadcastId}`);
+
+      const statusMessage = await ctx.reply('🚀 Начинаю рассылку...', stopKeyboard);
       const startTime = Date.now();
 
-      const result = await this.userManager.broadcastMessageConcurrent(chatId, message, this.broadcastOptions, (progress) => {
+      const result = await this.userManager.broadcastMessageConcurrent(streamerNickname, message, this.broadcastOptions, () => this.getBroadcastStopStatus(broadcastId), (progress) => {
         const percentage = Math.round((progress.currentIndex / progress.totalUsers) * 100);
         const progressBar = this.createProgressBar(percentage);
 
@@ -989,15 +1033,11 @@ export class TelegramBot {
           statusText += `\n⚠️ Последняя ошибка:\n${progress.result.error}\n`;
         }
 
-        // Update status message
-        ctx.telegram.editMessageText(
-          ctx.chat?.id,
-          statusMessage.message_id,
-          undefined,
-          statusText
-        ).catch(() => {
-          // Ignore telegram rate limit errors
-        });
+        // Update status message with rate limiting protection (only every 5th update)
+        this.updateCounter++;
+        if (this.updateCounter % 5 === 0) {
+          this.updateTelegramMessage(ctx, statusMessage.message_id, statusText, stopKeyboard);
+        }
       });
 
       // Calculate execution time
@@ -1008,24 +1048,20 @@ export class TelegramBot {
       const total = result.sent + result.failed;
       const successRate = total > 0 ? Math.round((result.sent / total) * 100) : 0;
       
-      let finalMessage = `✅ Рассылка завершена!\n\n📊 ИТОГИ:\n`;
+      let finalMessage = result.stopped 
+        ? `🛑 Рассылка остановлена!\n\n📊 ИТОГИ:\n`
+        : `✅ Рассылка завершена!\n\n📊 ИТОГИ:\n`;
+      
       finalMessage += `👥 Всего пользователей: ${total}\n`;
       finalMessage += `✅ Успешно отправлено: ${result.sent}\n`;
       finalMessage += `❌ Ошибок: ${result.failed}\n`;
       finalMessage += `📈 Успешность: ${successRate}%\n`;
       finalMessage += `⏱️ Время выполнения: ${executionTime} секунд\n`;
 
-      // Add full error list if there were any failures
+      // Create error file if there were failures
+      let errorFile = null;
       if (result.failed > 0) {
-        const failedResults = result.results.filter(r => !r.success);
-        if (failedResults.length > 0) {
-          finalMessage += `\n🔍 ПОЛНЫЙ СПИСОК ОШИБОК:\n`;
-          
-          failedResults.forEach((error: SendMessageResponse, index: number) => {
-            const errorText = error.error || 'Неизвестная ошибка';
-            finalMessage += `${index + 1}. ${errorText}\n`;
-          });
-        }
+        errorFile = await this.createErrorFile(result.results);
       }
 
       await ctx.telegram.editMessageText(
@@ -1036,7 +1072,17 @@ export class TelegramBot {
         this.getBackToMenuKeyboard()
       );
 
+      // Send error file if errors occurred
+      if (errorFile) {
+        await this.sendErrorFile(ctx, errorFile);
+      }
+
+      // Clean up broadcast tracking
+      this.activeBroadcasts.delete(broadcastId);
+
     } catch (error) {
+      // Clean up broadcast tracking on error
+      this.activeBroadcasts.delete(broadcastId);
       ctx.reply(`❌ Ошибка рассылки: ${error}`, this.getBackToMenuKeyboard());
     }
   }
@@ -1044,16 +1090,16 @@ export class TelegramBot {
   private async processSendAsUserData(ctx: Context, input: string): Promise<void> {
     const parts = input.trim().split(' ');
     if (parts.length < 3) {
-      ctx.reply('❌ Неверный формат. Используйте: username chatId message', this.getBackToMenuKeyboard());
+      ctx.reply('❌ Неверный формат. Используйте: username streamer_nickname message', this.getBackToMenuKeyboard());
       return;
     }
 
     const username = parts[0];
-    const chatId = parts[1];
+    const streamerNickname = parts[1];
     const message = parts.slice(2).join(' ');
 
     try {
-      const result = await this.userManager.sendMessageFromUser(username, chatId, message);
+      const result = await this.userManager.sendMessageFromUser(username, streamerNickname, message);
 
       if (result.success) {
         ctx.reply(`✅ Сообщение отправлено от пользователя ${username}`, this.getBackToMenuKeyboard());
@@ -1189,16 +1235,16 @@ export class TelegramBot {
     const message = ctx.message as any;
     const args = message?.text?.split(' ').slice(1);
     if (!args || args.length < 3) {
-      ctx.reply('❌ Формат: /sendas <username> <chatId> <message>');
+      ctx.reply('❌ Формат: /sendas <username> <streamer_nickname> <message>');
       return;
     }
 
     const username = args[0];
-    const chatId = args[1];
+    const streamerNickname = args[1];
     const messageText = args.slice(2).join(' ');
 
     try {
-      const result = await this.userManager.sendMessageFromUser(username, chatId, messageText);
+      const result = await this.userManager.sendMessageFromUser(username, streamerNickname, messageText);
 
       if (result.success) {
         ctx.reply(`✅ Сообщение отправлено от ${username}`);
@@ -1218,7 +1264,185 @@ export class TelegramBot {
     this.userStates.set(userId, 'waiting_send_as_user_data');
     
     const userCount = this.userManager.getUserCount();
-    ctx.editMessageText(`💬 Отправка сообщения от пользователя\n\nВведите данные в формате:\nusername chatId message\n\nПример: makar4ik 78046505 Привет!\n\n👥 Доступно пользователей: ${userCount}`);
+    const streamers = this.userManager.getAllStreamerNicknames();
+    const streamersList = streamers.length > 0 ? `\n\n📺 Доступные стримеры:\n${streamers.join(', ')}` : '';
+    
+    ctx.editMessageText(`💬 Отправка сообщения от пользователя\n\nВведите данные в формате:\nusername streamer_nickname message\n\nПример: makar4ik shroud Привет!${streamersList}\n\n👥 Доступно пользователей: ${userCount}`);
+  }
+
+  private handleStopBroadcast(ctx: Context, broadcastId: string): void {
+    this.logger.info(`Stop requested for broadcast ${broadcastId}`);
+    const broadcast = this.activeBroadcasts.get(broadcastId);
+    
+    if (!broadcast) {
+      this.logger.warn(`Broadcast ${broadcastId} not found in active broadcasts`);
+      ctx.reply('❌ Рассылка уже завершена или не найдена').catch(() => {});
+      return;
+    }
+
+    broadcast.shouldStop = true;
+    this.logger.info(`Broadcast ${broadcastId} stop flag set to true`);
+    
+    // Don't send reply here - will be handled by broadcast completion
+  }
+
+  public getBroadcastStopStatus(broadcastId: string): boolean {
+    const broadcast = this.activeBroadcasts.get(broadcastId);
+    const shouldStop = broadcast?.shouldStop || false;
+    if (shouldStop) {
+      this.logger.info(`getBroadcastStopStatus: Broadcast ${broadcastId} should stop = true`);
+    }
+    return shouldStop;
+  }
+
+  private async updateTelegramMessage(ctx: Context, messageId: number, text: string, keyboard?: any): Promise<void> {
+    const now = Date.now();
+    
+    if (now - this.lastMessageUpdate < this.messageUpdateThrottle) {
+      return;
+    }
+    
+    this.lastMessageUpdate = now;
+    
+    if (text.length > 4096) {
+      text = text.substring(0, 4090) + '...';
+    }
+    
+    try {
+      // Add timeout to prevent hanging
+      await Promise.race([
+        ctx.telegram.editMessageText(
+          ctx.chat?.id,
+          messageId,
+          undefined,
+          text,
+          keyboard
+        ),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Update timeout')), 10000)
+        )
+      ]);
+    } catch (error: any) {
+      if (error.message === 'Update timeout') {
+        this.logger.warn('Telegram message update timeout, increasing throttle');
+        this.messageUpdateThrottle = Math.min(this.messageUpdateThrottle * 1.5, 15000);
+        return;
+      }
+      
+      if (error.code === 429) {
+        const retryAfter = error.parameters?.retry_after || 10;
+        this.logger.warn(`Telegram rate limited, retry after ${retryAfter}s`);
+        this.messageUpdateThrottle = Math.max(this.messageUpdateThrottle, retryAfter * 1000);
+        return;
+      }
+      
+      if (error.code === 400 && (
+        error.description?.includes('not modified') || 
+        error.description?.includes('message is not modified')
+      )) {
+        return;
+      }
+      
+      // Don't log other telegram errors to reduce noise
+      if (!error.description?.includes('Bad Request')) {
+        this.logger.warn(`Telegram message update failed: ${error.message}`);
+      }
+    }
+  }
+
+  private async createErrorFile(results: SendMessageResponse[]): Promise<string | null> {
+    try {
+      const failedResults = results.filter(r => !r.success);
+      
+      if (failedResults.length === 0) {
+        return null;
+      }
+
+      const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
+      const errorFilePath = path.resolve(`./broadcast_errors_${timestamp}.txt`);
+      
+      let errorContent = `ДЕТАЛЬНЫЙ ОТЧЕТ ОБ ОШИБКАХ РАССЫЛКИ\n`;
+      errorContent += `Дата: ${new Date().toLocaleString('ru-RU')}\n`;
+      errorContent += `Всего ошибок: ${failedResults.length}\n`;
+      errorContent += `${'='.repeat(60)}\n\n`;
+
+      const errorGroups: { [key: string]: string[] } = {};
+
+      // Группируем ошибки по типам
+      failedResults.forEach((error, index) => {
+        const errorText = error.error || 'Неизвестная ошибка';
+        const errorType = this.extractErrorType(errorText);
+        
+        if (!errorGroups[errorType]) {
+          errorGroups[errorType] = [];
+        }
+        errorGroups[errorType].push(`${index + 1}. ${errorText}`);
+      });
+
+      // Записываем сгруппированные ошибки
+      Object.entries(errorGroups).forEach(([errorType, errors]) => {
+        errorContent += `${errorType.toUpperCase()} (${errors.length} шт.):\n`;
+        errorContent += `${'-'.repeat(40)}\n`;
+        errors.forEach(error => {
+          errorContent += `${error}\n`;
+        });
+        errorContent += `\n`;
+      });
+
+      writeFileSync(errorFilePath, errorContent, 'utf-8');
+      this.logger.info(`Error file created: ${errorFilePath}`);
+      
+      return errorFilePath;
+
+    } catch (error) {
+      this.logger.error(`Failed to create error file: ${error}`);
+      return null;
+    }
+  }
+
+  private extractErrorType(errorText: string): string {
+    if (errorText.includes('Access forbidden') || errorText.includes('403')) {
+      return 'Доступ запрещен (403)';
+    } else if (errorText.includes('Rate limited') || errorText.includes('429')) {
+      return 'Превышение лимитов (429)';
+    } else if (errorText.includes('Server error') || errorText.includes('5')) {
+      return 'Ошибки сервера (5xx)';
+    } else if (errorText.includes('400')) {
+      return 'Неверный запрос (400)';
+    } else if (errorText.includes('Network Error') || errorText.includes('timeout')) {
+      return 'Сетевые ошибки';
+    } else {
+      return 'Прочие ошибки';
+    }
+  }
+
+  private async sendErrorFile(ctx: Context, filePath: string): Promise<void> {
+    try {
+      const fileName = `errors_${new Date().toISOString().split('T')[0]}.txt`;
+      
+      await ctx.replyWithDocument({
+        source: filePath,
+        filename: fileName
+      }, {
+        caption: `📄 Детальный отчет об ошибках рассылки\n\n⚠️ В файле содержится подробная информация о всех неудачных попытках отправки сообщений.`,
+        ...this.getBackToMenuKeyboard()
+      });
+
+      // Удаляем временный файл
+      if (existsSync(filePath)) {
+        unlinkSync(filePath);
+      }
+
+      this.logger.info(`Error file sent and cleaned up: ${filePath}`);
+
+    } catch (error) {
+      this.logger.error(`Failed to send error file: ${error}`);
+      
+      // Попытаемся удалить файл в случае ошибки
+      if (existsSync(filePath)) {
+        unlinkSync(filePath);
+      }
+    }
   }
 
   public stop(): void {
