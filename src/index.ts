@@ -18,8 +18,12 @@ async function main() {
       throw new Error('BOT_TOKEN must be set in .env file');
     }
 
-    await userManager.loadAccountsFromFile('./accounts.yml');
-    logger.info(`Loaded ${userManager.getUserCount()} accounts`);
+    try {
+      await userManager.loadAccountsFromFile('./accounts.yml');
+      logger.info(`Loaded ${userManager.getUserCount()} accounts`);
+    } catch (error) {
+      logger.info('accounts.yml file not found or invalid, starting with empty user list');
+    }
 
     const telegramBot = new TelegramBot(botToken, '', userManager, logger);
 

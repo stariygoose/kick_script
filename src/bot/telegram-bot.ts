@@ -486,8 +486,13 @@ export class TelegramBot {
       this.logger.info(`Accounts reloaded via Telegram bot: ${count} accounts`);
 
     } catch (error) {
-      ctx.reply(`❌ Ошибка перезагрузки: ${error}`);
-      this.logger.error(`Failed to reload accounts via Telegram bot: ${error}`);
+      if (this.userManager.getUserCount() === 0) {
+        ctx.reply(`⚠️ Файл accounts.yml не найден или пуст. Бот продолжает работу с пустым списком пользователей.`);
+        this.logger.info(`accounts.yml not found during reload, continuing with empty user list`);
+      } else {
+        ctx.reply(`❌ Ошибка перезагрузки: ${error}`);
+        this.logger.error(`Failed to reload accounts via Telegram bot: ${error}`);
+      }
     }
   }
 
