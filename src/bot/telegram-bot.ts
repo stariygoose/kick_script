@@ -14,7 +14,7 @@ export class TelegramBot {
   private botToken: string;
   private accountsFilePath: string = './accounts.yml';
   private userStates: Map<string, string> = new Map();
-  private broadcastOptions: BroadcastOptions = { concurrency: 2, delayMs: 1000 };
+  private broadcastOptions: BroadcastOptions = { concurrency: 3, delayMs: 500 };
   private allowedUsers: Set<number> = new Set();
   private lastMessageUpdate: number = 0;
   private messageUpdateThrottle: number = 5000;
@@ -200,10 +200,6 @@ export class TelegramBot {
       this.setBroadcastPreset(ctx, { concurrency: 3, delayMs: 500 }, 'Балансированный');
     });
 
-    this.bot.action('set_safe', (ctx) => {
-      ctx.answerCbQuery();
-      this.setBroadcastPreset(ctx, { concurrency: 1, delayMs: 2000 }, 'Безопасный');
-    });
 
     this.bot.action('export_config', (ctx) => {
       ctx.answerCbQuery();
@@ -812,7 +808,6 @@ export class TelegramBot {
     const keyboard = Markup.inlineKeyboard([
       [Markup.button.callback('⚡ Быстро (3 потока, 300ms)', 'set_fast')],
       [Markup.button.callback('⚖️ Балансированно (3 потока, 500ms)', 'set_balanced')],
-      [Markup.button.callback('🐌 Безопасно (1 поток, 2000ms)', 'set_safe')],
       [Markup.button.callback('⬅️ Назад', 'main_menu')],
     ]);
 

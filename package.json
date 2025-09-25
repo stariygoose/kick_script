@@ -9,7 +9,8 @@
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/index.js",
-    "prod": "npm run build && npm run start"
+    "prod": "npm run build && npm run start",
+    "follow": "npx ts-node src/follow-channel.ts"
   },
   "dependencies": {
     "axios": "^1.12.2",
