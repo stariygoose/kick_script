@@ -6507,3 +6507,179 @@
 [32m[2025-09-24T22:12:02.709Z] [INFO] Concurrent broadcast completed: 1137 sent, 1 failed[0m
 [32m[2025-09-24T22:12:02.746Z] [INFO] Error file created: /home/goose/Work/kick_script/broadcast_errors_2025-09-24T22-12-02.txt[0m
 [32m[2025-09-24T22:12:02.911Z] [INFO] Error file sent and cleaned up: /home/goose/Work/kick_script/broadcast_errors_2025-09-24T22-12-02.txt[0m
+[32m[2025-10-13T15:01:09.816Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-10-13T15:01:09.818Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[31m[2025-10-13T15:01:09.818Z] [ERROR] Failed to read accounts file: Error: ENOENT: no such file or directory, open './accounts.yml'[0m
+[31m[2025-10-13T15:01:09.818Z] [ERROR] Failed to load accounts: Error: Failed to parse accounts file: Error: ENOENT: no such file or directory, open './accounts.yml'[0m
+[32m[2025-10-13T15:01:09.819Z] [INFO] accounts.yml file not found or invalid, starting with empty user list[0m
+[32m[2025-10-13T15:01:09.819Z] [INFO] Loaded 1 allowed users[0m
+[32m[2025-10-13T15:06:54.648Z] [INFO] Successfully parsed 20 accounts from text format[0m
+[32m[2025-10-13T15:06:54.673Z] [INFO] Exported 20 users and 0 streamers to ./accounts.yml[0m
+[32m[2025-10-13T15:06:54.673Z] [INFO] Imported 20 accounts from text and updated YAML file: ./accounts.yml[0m
+[32m[2025-10-13T15:07:24.765Z] [INFO] Created broadcast with slots 1760368044765_2ve1y4uc9[0m
+[32m[2025-10-13T15:07:24.766Z] [INFO] Created stop button for broadcast 1760368044765_2ve1y4uc9[0m
+[32m[2025-10-13T15:08:23.222Z] [INFO] Stop callback received for broadcast: 1760368044765_2ve1y4uc9[0m
+[32m[2025-10-13T15:08:23.222Z] [INFO] Stop requested for broadcast 1760368044765_2ve1y4uc9[0m
+[33m[2025-10-13T15:08:23.222Z] [WARN] Broadcast 1760368044765_2ve1y4uc9 not found in active broadcasts[0m
+[32m[2025-10-13T15:11:08.105Z] [INFO] Created broadcast with slots 1760368268105_kv5w6qnvm[0m
+[32m[2025-10-13T15:11:08.105Z] [INFO] Created stop button for broadcast 1760368268105_kv5w6qnvm[0m
+[32m[2025-10-13T15:11:12.428Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-10-13T15:11:15.716Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-10-13T15:11:15.717Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-10-13T15:11:15.727Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-10-13T15:11:15.733Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
+[32m[2025-10-13T15:11:15.733Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-10-13T15:11:15.733Z] [INFO] Loaded 20 accounts[0m
+[32m[2025-10-13T15:11:15.734Z] [INFO] Loaded 1 allowed users[0m
+[32m[2025-10-13T15:11:31.952Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-10-13T15:13:22.323Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-10-13T15:13:22.324Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-10-13T15:13:22.333Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-10-13T15:13:22.339Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
+[32m[2025-10-13T15:13:22.339Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-10-13T15:13:22.340Z] [INFO] Loaded 20 accounts[0m
+[32m[2025-10-13T15:13:22.341Z] [INFO] Loaded 1 allowed users[0m
+[32m[2025-10-13T15:13:23.925Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-10-13T15:13:40.426Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-10-13T15:13:40.428Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-10-13T15:13:40.437Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-10-13T15:13:40.442Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
+[32m[2025-10-13T15:13:40.442Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-10-13T15:13:40.443Z] [INFO] Loaded 20 accounts[0m
+[32m[2025-10-13T15:13:40.443Z] [INFO] Loaded 1 allowed users[0m
+[32m[2025-10-13T15:14:12.553Z] [INFO] Accounts file ./accounts.yml changed, reloading accounts...[0m
+[32m[2025-10-13T15:14:12.553Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-10-13T15:14:12.556Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-10-13T15:14:12.560Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
+[32m[2025-10-13T15:14:19.286Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-10-13T15:14:21.700Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-10-13T15:14:21.702Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-10-13T15:14:21.712Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-10-13T15:14:21.717Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
+[32m[2025-10-13T15:14:21.717Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-10-13T15:14:21.717Z] [INFO] Loaded 20 accounts[0m
+[32m[2025-10-13T15:14:21.718Z] [INFO] Loaded 1 allowed users[0m
+[32m[2025-10-13T15:14:36.104Z] [INFO] Created broadcast with slots 1760368476104_gqmwqqtyl[0m
+[32m[2025-10-13T15:14:36.104Z] [INFO] Created stop button for broadcast 1760368476104_gqmwqqtyl[0m
+[32m[2025-10-13T15:14:36.201Z] [INFO] Broadcasting message with slots to 20 users with concurrency 3 and 500ms delay[0m
+[33m[2025-10-13T15:14:36.816Z] [WARN] send message from B_O_R_O_D_A failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:36.816Z] [WARN] send message from Dudgelord failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:36.817Z] [WARN] send message from makar4ik failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:38.086Z] [WARN] send message from makar4ik failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:38.087Z] [WARN] send message from B_O_R_O_D_A failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:38.178Z] [WARN] send message from Dudgelord failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:40.342Z] [WARN] send message from makar4ik failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:40.342Z] [ERROR] send message from makar4ik failed after 3 attempts[0m
+[33m[2025-10-13T15:14:40.377Z] [WARN] send message from B_O_R_O_D_A failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:40.378Z] [ERROR] send message from B_O_R_O_D_A failed after 3 attempts[0m
+[33m[2025-10-13T15:14:40.554Z] [WARN] send message from Dudgelord failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:40.554Z] [ERROR] send message from Dudgelord failed after 3 attempts[0m
+[33m[2025-10-13T15:14:41.310Z] [WARN] send message from Xsolla failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:41.314Z] [WARN] send message from TOP1_XIM3ABO failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:41.325Z] [WARN] send message from mostkovoj148 failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:42.571Z] [WARN] send message from Xsolla failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:42.595Z] [WARN] send message from TOP1_XIM3ABO failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:42.606Z] [WARN] send message from mostkovoj148 failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:45.008Z] [WARN] send message from TOP1_XIM3ABO failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:45.008Z] [ERROR] send message from TOP1_XIM3ABO failed after 3 attempts[0m
+[33m[2025-10-13T15:14:45.009Z] [WARN] send message from Xsolla failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:45.009Z] [ERROR] send message from Xsolla failed after 3 attempts[0m
+[33m[2025-10-13T15:14:45.018Z] [WARN] send message from mostkovoj148 failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:45.018Z] [ERROR] send message from mostkovoj148 failed after 3 attempts[0m
+[33m[2025-10-13T15:14:45.828Z] [WARN] send message from ArtemGotlib failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:45.829Z] [WARN] send message from Benzotape7 failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:45.915Z] [WARN] send message from BarbiGirl52 failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:47.159Z] [WARN] send message from Benzotape7 failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:47.159Z] [WARN] send message from ArtemGotlib failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:47.205Z] [WARN] send message from BarbiGirl52 failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:49.513Z] [WARN] send message from Benzotape7 failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:49.513Z] [ERROR] send message from Benzotape7 failed after 3 attempts[0m
+[33m[2025-10-13T15:14:49.522Z] [WARN] send message from ArtemGotlib failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:49.522Z] [ERROR] send message from ArtemGotlib failed after 3 attempts[0m
+[33m[2025-10-13T15:14:49.596Z] [WARN] send message from BarbiGirl52 failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:49.597Z] [ERROR] send message from BarbiGirl52 failed after 3 attempts[0m
+[33m[2025-10-13T15:14:50.438Z] [WARN] send message from BroToxi failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:50.439Z] [WARN] send message from BomjastiK failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:50.474Z] [WARN] send message from bloodmotherr failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:51.694Z] [WARN] send message from BroToxi failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:51.694Z] [WARN] send message from BomjastiK failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:51.860Z] [WARN] send message from bloodmotherr failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:53.978Z] [WARN] send message from BomjastiK failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:53.978Z] [ERROR] send message from BomjastiK failed after 3 attempts[0m
+[33m[2025-10-13T15:14:54.059Z] [WARN] send message from BroToxi failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:54.059Z] [ERROR] send message from BroToxi failed after 3 attempts[0m
+[33m[2025-10-13T15:14:54.120Z] [WARN] send message from bloodmotherr failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:54.120Z] [ERROR] send message from bloodmotherr failed after 3 attempts[0m
+[33m[2025-10-13T15:14:54.878Z] [WARN] send message from MisterBarabolya failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:54.881Z] [WARN] send message from CandyBunker failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:54.914Z] [WARN] send message from Bushhidoo failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:56.140Z] [WARN] send message from CandyBunker failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:56.140Z] [WARN] send message from MisterBarabolya failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:56.183Z] [WARN] send message from Bushhidoo failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:58.424Z] [WARN] send message from CandyBunker failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:58.424Z] [ERROR] send message from CandyBunker failed after 3 attempts[0m
+[33m[2025-10-13T15:14:58.425Z] [WARN] send message from MisterBarabolya failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:58.425Z] [ERROR] send message from MisterBarabolya failed after 3 attempts[0m
+[33m[2025-10-13T15:14:58.462Z] [WARN] send message from Bushhidoo failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:14:58.462Z] [ERROR] send message from Bushhidoo failed after 3 attempts[0m
+[33m[2025-10-13T15:14:59.445Z] [WARN] send message from FireArcher1 failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:59.445Z] [WARN] send message from gartobarboss failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:14:59.445Z] [WARN] send message from dedisterr failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:15:00.778Z] [WARN] send message from gartobarboss failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:15:00.795Z] [WARN] send message from dedisterr failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:15:00.817Z] [WARN] send message from FireArcher1 failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:15:03.135Z] [WARN] send message from FireArcher1 failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:15:03.135Z] [ERROR] send message from FireArcher1 failed after 3 attempts[0m
+[33m[2025-10-13T15:15:03.136Z] [WARN] send message from dedisterr failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:15:03.136Z] [ERROR] send message from dedisterr failed after 3 attempts[0m
+[33m[2025-10-13T15:15:03.169Z] [WARN] send message from gartobarboss failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:15:03.170Z] [ERROR] send message from gartobarboss failed after 3 attempts[0m
+[33m[2025-10-13T15:15:04.155Z] [WARN] send message from thetusk_88 failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:15:04.157Z] [WARN] send message from Jakijan failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:15:05.489Z] [WARN] send message from Jakijan failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:15:05.490Z] [WARN] send message from thetusk_88 failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:15:07.788Z] [WARN] send message from thetusk_88 failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:15:07.788Z] [ERROR] send message from thetusk_88 failed after 3 attempts[0m
+[33m[2025-10-13T15:15:07.788Z] [WARN] send message from Jakijan failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:15:07.788Z] [ERROR] send message from Jakijan failed after 3 attempts[0m
+[31m[2025-10-13T15:15:07.789Z] [ERROR] ❌ Server error (20): makar4ik, B_O_R_O_D_A, Dudgelord, TOP1_XIM3ABO, Xsolla, mostkovoj148, Benzotape7, ArtemGotlib, BarbiGirl52, BomjastiK, BroToxi, bloodmotherr, CandyBunker, MisterBarabolya, Bushhidoo, FireArcher1, dedisterr, gartobarboss, thetusk_88, Jakijan[0m
+[32m[2025-10-13T15:15:07.789Z] [INFO] Concurrent broadcast with slots completed: 0 sent, 20 failed[0m
+[32m[2025-10-13T15:15:07.806Z] [INFO] Error file created: /home/goose/Work/kick/kick_script/broadcast_errors_2025-10-13T15-15-07.txt[0m
+[32m[2025-10-13T15:15:08.312Z] [INFO] Error file sent and cleaned up: /home/goose/Work/kick/kick_script/broadcast_errors_2025-10-13T15-15-07.txt[0m
+[32m[2025-10-13T15:15:25.081Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-10-13T15:15:47.647Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-10-13T15:15:47.648Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-10-13T15:15:47.658Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-10-13T15:15:47.663Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
+[32m[2025-10-13T15:15:47.664Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-10-13T15:15:47.664Z] [INFO] Loaded 20 accounts[0m
+[32m[2025-10-13T15:15:47.664Z] [INFO] Loaded 1 allowed users[0m
+[32m[2025-10-13T15:16:06.068Z] [INFO] Created broadcast 1760368566068_vew36gqhc[0m
+[32m[2025-10-13T15:16:06.069Z] [INFO] Created stop button for broadcast 1760368566068_vew36gqhc[0m
+[32m[2025-10-13T15:16:06.213Z] [INFO] Broadcasting message to 20 users with concurrency 3 and 500ms delay[0m
+[33m[2025-10-13T15:16:06.630Z] [WARN] send message from B_O_R_O_D_A failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:16:06.634Z] [WARN] send message from makar4ik failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:16:06.636Z] [WARN] send message from Dudgelord failed on attempt 1: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:16:07.952Z] [WARN] send message from B_O_R_O_D_A failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:16:07.955Z] [WARN] send message from Dudgelord failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:16:07.956Z] [WARN] send message from makar4ik failed on attempt 2: AxiosError: Request failed with status code 500[0m
+[33m[2025-10-13T15:16:10.317Z] [WARN] send message from B_O_R_O_D_A failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:16:10.318Z] [ERROR] send message from B_O_R_O_D_A failed after 3 attempts[0m
+[33m[2025-10-13T15:16:10.320Z] [WARN] send message from Dudgelord failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:16:10.320Z] [ERROR] send message from Dudgelord failed after 3 attempts[0m
+[33m[2025-10-13T15:16:10.323Z] [WARN] send message from makar4ik failed on attempt 3: AxiosError: Request failed with status code 500[0m
+[31m[2025-10-13T15:16:10.323Z] [ERROR] send message from makar4ik failed after 3 attempts[0m
+[32m[2025-10-13T15:16:11.119Z] [INFO] Received SIGINT, shutting down gracefully...[0m
+[32m[2025-10-13T15:26:07.651Z] [INFO] Starting Kick Bot Manager with Telegram interface[0m
+[32m[2025-10-13T15:26:07.653Z] [INFO] Reading accounts from file: ./accounts.yml[0m
+[32m[2025-10-13T15:26:07.662Z] [INFO] Successfully parsed 20 accounts from YAML format[0m
+[32m[2025-10-13T15:26:07.667Z] [INFO] Loaded 20 accounts and 1 streamers into UserManager[0m
+[32m[2025-10-13T15:26:07.667Z] [INFO] Started watching accounts file: ./accounts.yml[0m
+[32m[2025-10-13T15:26:07.668Z] [INFO] Loaded 20 accounts[0m
+[32m[2025-10-13T15:26:07.668Z] [INFO] Loaded 1 allowed users[0m
+[32m[2025-10-13T15:26:19.904Z] [INFO] Created broadcast with slots 1760369179904_6mdobo4cy[0m
+[32m[2025-10-13T15:26:19.905Z] [INFO] Created stop button for broadcast 1760369179904_6mdobo4cy[0m
+[32m[2025-10-13T15:26:20.108Z] [INFO] Broadcasting message with slots to 20 users with concurrency 3 and 500ms delay[0m
+[32m[2025-10-13T15:26:29.530Z] [INFO] ✅ Successfully sent (20): Dudgelord, makar4ik, B_O_R_O_D_A, mostkovoj148, Xsolla, TOP1_XIM3ABO, BarbiGirl52, ArtemGotlib, Benzotape7, BroToxi, BomjastiK, bloodmotherr, CandyBunker, Bushhidoo, MisterBarabolya, gartobarboss, dedisterr, FireArcher1, Jakijan, thetusk_88[0m
+[32m[2025-10-13T15:26:29.530Z] [INFO] Concurrent broadcast with slots completed: 20 sent, 0 failed[0m
+[32m[2025-10-13T15:27:02.162Z] [INFO] Received SIGINT, shutting down gracefully...[0m

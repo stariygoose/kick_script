@@ -669,7 +669,7 @@ export class UserManager {
     try {
       // Импортируем данные из исходного YML файла
       const { users, streamers } = this.accountParser.importFromFile(ymlFilePath);
-      
+
       // Очищаем текущие данные
       this.senders.clear();
       this.streamers.clear();
@@ -687,12 +687,219 @@ export class UserManager {
 
       // Перезаписываем целевой YML файл
       this.exportToYaml(targetYmlPath);
-      
+
       this.logger.info(`Imported ${users.length} users and ${Object.keys(streamers).length} streamers from ${ymlFilePath} and overwrote ${targetYmlPath}`);
 
     } catch (error) {
       this.logger.error(`Failed to import from YML and overwrite: ${error}`);
       throw error;
     }
+  }
+
+  public async broadcastMessageWithSlots(
+    streamerNickname: string,
+    baseWord: string,
+    slotWords: string[],
+    options: BroadcastOptions = {},
+    stopCallback?: () => boolean,
+    progressCallback?: (progress: {
+      currentUser: string;
+      currentIndex: number;
+      totalUsers: number;
+      sent: number;
+      failed: number;
+      result?: SendMessageResponse;
+      streamerNickname?: string;
+    }) => void
+  ): Promise<{ sent: number; failed: number; results: SendMessageResponse[]; stopped?: boolean }> {
+    // Get streamer info and validate
+    const streamer = this.streamers.get(streamerNickname);
+    if (!streamer) {
+      throw new Error(`Стример "${streamerNickname}" не найден`);
+    }
+
+    if (!slotWords || slotWords.length === 0) {
+      throw new Error(`Массив слов для ротации пуст`);
+    }
+
+    const chatId = streamer.chatId;
+    const { concurrency = 5, delayMs = 200 } = options;
+    const results: SendMessageResponse[] = [];
+    let sent = 0;
+    let failed = 0;
+    const usernames = Array.from(this.senders.keys());
+    const totalUsers = usernames.length;
+
+    this.logger.info(`Broadcasting message with slots to ${totalUsers} users with concurrency ${concurrency} and ${delayMs}ms delay`);
+
+    let stopped = false;
+    const abortController = new AbortController();
+    const recentResults: Array<{ username: string; success: boolean; error?: string }> = [];
+    let logBatchCounter = 0;
+
+    // Process users in chunks with concurrency limit
+    for (let i = 0; i < usernames.length; i += concurrency) {
+      // Check if broadcast should be stopped
+      if (stopCallback) {
+        const shouldStop = stopCallback();
+        if (shouldStop) {
+          stopped = true;
+          abortController.abort();
+          this.logger.info(`Broadcast with slots stopped by user request at chunk ${i}/${usernames.length}`);
+          break;
+        }
+      }
+
+      const chunk = usernames.slice(i, i + concurrency);
+
+      // Process chunk concurrently
+      const chunkPromises = chunk.map(async (username, chunkIndex) => {
+        // Check stop flag before processing each user
+        if (stopCallback && stopCallback()) {
+          const skipResult: SendMessageResponse = {
+            success: false,
+            error: `User: ${username} - Broadcast stopped`
+          };
+          const globalIndex = i + chunkIndex;
+          results[globalIndex] = skipResult;
+          failed++;
+          return;
+        }
+
+        const globalIndex = i + chunkIndex;
+        const sender = this.senders.get(username);
+
+        if (!sender) {
+          const errorResult: SendMessageResponse = {
+            success: false,
+            error: `User: ${username} - Sender not found`
+          };
+          results[globalIndex] = errorResult;
+          failed++;
+
+          if (progressCallback) {
+            setImmediate(() => {
+              progressCallback({
+                currentUser: username,
+                currentIndex: globalIndex + 1,
+                totalUsers,
+                sent,
+                failed,
+                result: errorResult,
+                streamerNickname: streamerNickname
+              });
+            });
+          }
+          return;
+        }
+
+        try {
+          // Check stop flag before sending
+          if (stopCallback && stopCallback()) {
+            const skipResult: SendMessageResponse = {
+              success: false,
+              error: `User: ${username} - Broadcast stopped`
+            };
+            results[globalIndex] = skipResult;
+            failed++;
+            return;
+          }
+
+          // Rotate slot words: get word by index (modulo array length for cycling)
+          const slotWord = slotWords[globalIndex % slotWords.length];
+          const message = `${baseWord} ${slotWord}`;
+
+          const result = await sender.sendMessage(chatId, message, abortController.signal);
+          results[globalIndex] = result;
+
+          if (result.success) {
+            sent++;
+            recentResults.push({ username, success: true });
+          } else {
+            failed++;
+            recentResults.push({ username, success: false, error: result.error });
+          }
+
+          // Log batch every 20 results
+          logBatchCounter++;
+          if (logBatchCounter >= 20) {
+            this.logResultsBatch(recentResults);
+            recentResults.length = 0;
+            logBatchCounter = 0;
+          }
+
+          // Call progress callback if provided (non-blocking)
+          if (progressCallback) {
+            setImmediate(() => {
+              progressCallback({
+                currentUser: username,
+                currentIndex: globalIndex + 1,
+                totalUsers,
+                sent,
+                failed,
+                result,
+                streamerNickname: streamerNickname
+              });
+            });
+          }
+
+        } catch (error: any) {
+          failed++;
+          let errorMessage = `Unexpected error: ${error}`;
+
+          if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+            errorMessage = `Request cancelled (broadcast stopped)`;
+          }
+
+          const errorResult: SendMessageResponse = {
+            success: false,
+            error: `User: ${username} - ${errorMessage}`
+          };
+          results[globalIndex] = errorResult;
+
+          recentResults.push({ username, success: false, error: errorMessage });
+
+          // Log batch every 20 results
+          logBatchCounter++;
+          if (logBatchCounter >= 20) {
+            this.logResultsBatch(recentResults);
+            recentResults.length = 0;
+            logBatchCounter = 0;
+          }
+
+          // Call progress callback for error too (non-blocking)
+          if (progressCallback) {
+            setImmediate(() => {
+              progressCallback({
+                currentUser: username,
+                currentIndex: globalIndex + 1,
+                totalUsers,
+                sent,
+                failed,
+                result: errorResult,
+                streamerNickname: streamerNickname
+              });
+            });
+          }
+        }
+      });
+
+      // Wait for chunk to complete but don't wait for callbacks
+      await Promise.allSettled(chunkPromises);
+
+      // Add delay between chunks (except for the last chunk) if not stopped
+      if (i + concurrency < usernames.length && delayMs > 0 && !stopped) {
+        await this.delay(delayMs);
+      }
+    }
+
+    // Log remaining results if any
+    if (recentResults.length > 0) {
+      this.logResultsBatch(recentResults);
+    }
+
+    const statusMessage = stopped ? 'stopped by user' : 'completed';
+    this.logger.info(`Concurrent broadcast with slots ${statusMessage}: ${sent} sent, ${failed} failed`);
+    return { sent, failed, results, stopped };
   }
 }

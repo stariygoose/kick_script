@@ -1261,3 +1261,29 @@
 [31m[2025-09-24T22:02:58.518Z] [ERROR] Bot error: TimeoutError: Promise timed out after 90000 milliseconds[0m
 [31m[2025-09-24T22:10:40.798Z] [ERROR] send message from Jumbojuice77 failed after 3 attempts[0m
 [31m[2025-09-24T22:10:42.093Z] [ERROR] ❌ Access forbidden (1): Jumbojuice77[0m
+[31m[2025-10-13T15:01:09.818Z] [ERROR] Failed to read accounts file: Error: ENOENT: no such file or directory, open './accounts.yml'[0m
+[31m[2025-10-13T15:01:09.818Z] [ERROR] Failed to load accounts: Error: Failed to parse accounts file: Error: ENOENT: no such file or directory, open './accounts.yml'[0m
+[31m[2025-10-13T15:14:40.342Z] [ERROR] send message from makar4ik failed after 3 attempts[0m
+[31m[2025-10-13T15:14:40.378Z] [ERROR] send message from B_O_R_O_D_A failed after 3 attempts[0m
+[31m[2025-10-13T15:14:40.554Z] [ERROR] send message from Dudgelord failed after 3 attempts[0m
+[31m[2025-10-13T15:14:45.008Z] [ERROR] send message from TOP1_XIM3ABO failed after 3 attempts[0m
+[31m[2025-10-13T15:14:45.009Z] [ERROR] send message from Xsolla failed after 3 attempts[0m
+[31m[2025-10-13T15:14:45.018Z] [ERROR] send message from mostkovoj148 failed after 3 attempts[0m
+[31m[2025-10-13T15:14:49.513Z] [ERROR] send message from Benzotape7 failed after 3 attempts[0m
+[31m[2025-10-13T15:14:49.522Z] [ERROR] send message from ArtemGotlib failed after 3 attempts[0m
+[31m[2025-10-13T15:14:49.597Z] [ERROR] send message from BarbiGirl52 failed after 3 attempts[0m
+[31m[2025-10-13T15:14:53.978Z] [ERROR] send message from BomjastiK failed after 3 attempts[0m
+[31m[2025-10-13T15:14:54.059Z] [ERROR] send message from BroToxi failed after 3 attempts[0m
+[31m[2025-10-13T15:14:54.120Z] [ERROR] send message from bloodmotherr failed after 3 attempts[0m
+[31m[2025-10-13T15:14:58.424Z] [ERROR] send message from CandyBunker failed after 3 attempts[0m
+[31m[2025-10-13T15:14:58.425Z] [ERROR] send message from MisterBarabolya failed after 3 attempts[0m
+[31m[2025-10-13T15:14:58.462Z] [ERROR] send message from Bushhidoo failed after 3 attempts[0m
+[31m[2025-10-13T15:15:03.135Z] [ERROR] send message from FireArcher1 failed after 3 attempts[0m
+[31m[2025-10-13T15:15:03.136Z] [ERROR] send message from dedisterr failed after 3 attempts[0m
+[31m[2025-10-13T15:15:03.170Z] [ERROR] send message from gartobarboss failed after 3 attempts[0m
+[31m[2025-10-13T15:15:07.788Z] [ERROR] send message from thetusk_88 failed after 3 attempts[0m
+[31m[2025-10-13T15:15:07.788Z] [ERROR] send message from Jakijan failed after 3 attempts[0m
+[31m[2025-10-13T15:15:07.789Z] [ERROR] ❌ Server error (20): makar4ik, B_O_R_O_D_A, Dudgelord, TOP1_XIM3ABO, Xsolla, mostkovoj148, Benzotape7, ArtemGotlib, BarbiGirl52, BomjastiK, BroToxi, bloodmotherr, CandyBunker, MisterBarabolya, Bushhidoo, FireArcher1, dedisterr, gartobarboss, thetusk_88, Jakijan[0m
+[31m[2025-10-13T15:16:10.318Z] [ERROR] send message from B_O_R_O_D_A failed after 3 attempts[0m
+[31m[2025-10-13T15:16:10.320Z] [ERROR] send message from Dudgelord failed after 3 attempts[0m
+[31m[2025-10-13T15:16:10.323Z] [ERROR] send message from makar4ik failed after 3 attempts[0m
