@@ -10,6 +10,7 @@ import {
 import { writeFileSync, readFileSync, existsSync, unlinkSync } from "fs";
 import path from "path";
 import axios from "axios";
+import { slotsWords } from "../utils/slots-words.js";
 
 export class TelegramBot {
   private bot: Telegraf;
@@ -25,19 +26,7 @@ export class TelegramBot {
   private messageUpdateThrottle: number = 5000;
   private activeBroadcasts: Map<string, { shouldStop: boolean }> = new Map();
   private updateCounter: number = 0;
-  private slotWords: string[] = [
-    "Sweet Bonanza",
-    "Gates of Olympus",
-    "Собаки Мегавейс",
-    "Sugar Rush",
-    "Фрут Пати",
-    "Олимпус 1000",
-    "Дуэльки",
-    "Big Bass 1000",
-    "Hand of Midas",
-    "Extra Juicy Megaways",
-  ];
-
+  private slotWords: string[] = slotsWords;
   constructor(
     token: string,
     adminChatId: string,
@@ -1855,4 +1844,3 @@ export class TelegramBot {
     this.logger.info("Telegram bot stopped");
   }
 }
-
