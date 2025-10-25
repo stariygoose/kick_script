@@ -2,7 +2,7 @@ import { UserConfig, SendMessageResponse, StreamerConfig, BroadcastOptions } fro
 import { KickSender } from '../controllers/kick-sender.controller.js';
 import { Logger } from '../utils/logger.js';
 import { AccountParser } from '../utils/account-parser.js';
-import { watch, FSWatcher } from 'fs';
+import { watch, FSWatcher, writeFileSync } from 'fs';
 
 export class UserManager {
   private senders = new Map<string, KickSender>();
@@ -711,7 +711,7 @@ export class UserManager {
       result?: SendMessageResponse;
       streamerNickname?: string;
     }) => void
-  ): Promise<{ sent: number; failed: number; results: SendMessageResponse[]; stopped?: boolean }> {
+  ): Promise<{ sent: number; failed: number; results: SendMessageResponse[]; stopped?: boolean; reportFile?: string }> {
     // Get streamer info and validate
     const streamer = this.streamers.get(streamerNickname);
     if (!streamer) {
@@ -736,6 +736,7 @@ export class UserManager {
     const abortController = new AbortController();
     const recentResults: Array<{ username: string; success: boolean; error?: string }> = [];
     let logBatchCounter = 0;
+    const messageReport: Array<{ username: string; message: string }> = [];
 
     // Process users in chunks with concurrency limit
     for (let i = 0; i < usernames.length; i += concurrency) {
@@ -815,6 +816,8 @@ export class UserManager {
           if (result.success) {
             sent++;
             recentResults.push({ username, success: true });
+            // Save message info for report
+            messageReport.push({ username, message });
           } else {
             failed++;
             recentResults.push({ username, success: false, error: result.error });
@@ -898,8 +901,34 @@ export class UserManager {
       this.logResultsBatch(recentResults);
     }
 
+    // Create report file with username = message format
+    let reportFilePath: string | undefined = undefined;
+    if (messageReport.length > 0) {
+      try {
+        const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
+        reportFilePath = `./broadcast_slots_report_${timestamp}.txt`;
+
+        let reportContent = `ОТЧЕТ О РАССЫЛКЕ СО СЛОТАМИ\n`;
+        reportContent += `Дата: ${new Date().toLocaleString('ru-RU')}\n`;
+        reportContent += `Стример: ${streamerNickname}\n`;
+        reportContent += `Базовое слово: ${baseWord}\n`;
+        reportContent += `Всего отправлено: ${messageReport.length}\n`;
+        reportContent += `${'='.repeat(60)}\n\n`;
+
+        messageReport.forEach((entry) => {
+          reportContent += `${entry.username} = ${entry.message}\n`;
+        });
+
+        writeFileSync(reportFilePath, reportContent, 'utf-8');
+        this.logger.info(`Broadcast report created: ${reportFilePath}`);
+      } catch (error) {
+        this.logger.error(`Failed to create broadcast report: ${error}`);
+        reportFilePath = undefined;
+      }
+    }
+
     const statusMessage = stopped ? 'stopped by user' : 'completed';
     this.logger.info(`Concurrent broadcast with slots ${statusMessage}: ${sent} sent, ${failed} failed`);
-    return { sent, failed, results, stopped };
+    return { sent, failed, results, stopped, reportFile: reportFilePath };
   }
 }

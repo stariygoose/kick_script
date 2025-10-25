@@ -1398,6 +1398,11 @@ export class TelegramBot {
         await this.sendErrorFile(ctx, errorFile);
       }
 
+      // Send broadcast report file
+      if (result.reportFile) {
+        await this.sendReportFile(ctx, result.reportFile);
+      }
+
       this.activeBroadcasts.delete(broadcastId);
     } catch (error) {
       this.activeBroadcasts.delete(broadcastId);
@@ -1831,6 +1836,37 @@ export class TelegramBot {
       this.logger.info(`Error file sent and cleaned up: ${filePath}`);
     } catch (error) {
       this.logger.error(`Failed to send error file: ${error}`);
+
+      // Попытаемся удалить файл в случае ошибки
+      if (existsSync(filePath)) {
+        unlinkSync(filePath);
+      }
+    }
+  }
+
+  private async sendReportFile(ctx: Context, filePath: string): Promise<void> {
+    try {
+      const fileName = `broadcast_report_${new Date().toISOString().split("T")[0]}.txt`;
+
+      await ctx.replyWithDocument(
+        {
+          source: filePath,
+          filename: fileName,
+        },
+        {
+          caption: `📊 Отчет о рассылке со слотами\n\n✅ В файле содержится информация о том, какое сообщение было отправлено каждым пользователем.\n\nФормат: username = message`,
+          ...this.getBackToMenuKeyboard(),
+        },
+      );
+
+      // Удаляем временный файл
+      if (existsSync(filePath)) {
+        unlinkSync(filePath);
+      }
+
+      this.logger.info(`Report file sent and cleaned up: ${filePath}`);
+    } catch (error) {
+      this.logger.error(`Failed to send report file: ${error}`);
 
       // Попытаемся удалить файл в случае ошибки
       if (existsSync(filePath)) {
