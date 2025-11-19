@@ -466,6 +466,8 @@ export class TelegramBot {
   private async handleStats(ctx: Context): Promise<void> {
     if (!this.isAdmin(ctx)) return;
 
+    this.logger.info(`Generating stats. Current broadcastOptions: ${JSON.stringify(this.broadcastOptions)}`);
+
     const userCount = this.userManager.getUserCount();
     const streamersCount = this.userManager.getAllStreamerNicknames().length;
 
@@ -485,9 +487,11 @@ export class TelegramBot {
 ⏱️ Задержка: ${this.broadcastOptions.delayMs}ms`;
 
     if (this.broadcastOptions.randomDelay) {
+      this.logger.info(`Random delay is set: ${JSON.stringify(this.broadcastOptions.randomDelay)}`);
       const { min, max } = this.broadcastOptions.randomDelay;
       statsMessage += `\n🎲 Случайная задержка: от ${min / 1000} до ${max / 1000}с`;
     } else {
+      this.logger.info(`Random delay is NOT set.`);
       statsMessage += `\n🎲 Случайная задержка: ❌`;
     }
 
@@ -724,7 +728,9 @@ export class TelegramBot {
 
   public async start(): Promise<void> {
     try {
-      await this.bot.launch();
+      await this.bot.launch({
+        dropPendingUpdates: true,
+      });
       this.logger.info("Telegram bot started successfully");
       console.log("🤖 Telegram bot is running...");
     } catch (error) {
