@@ -427,14 +427,20 @@ export class UserManager {
     }
 
     const chatId = streamer.chatId;
-    const { concurrency = 5, delayMs = 200 } = options;
+    const { concurrency: originalConcurrency = 5, delayMs: originalDelayMs = 200, randomDelay } = options;
+    
+    let concurrency = originalConcurrency;
+    if (randomDelay) {
+      concurrency = 1;
+    }
+    
     const results: SendMessageResponse[] = [];
     let sent = 0;
     let failed = 0;
     const usernames = Array.from(this.senders.keys());
     const totalUsers = usernames.length;
 
-    this.logger.info(`Broadcasting message to ${totalUsers} users with concurrency ${concurrency} and ${delayMs}ms delay`);
+    this.logger.info(`Broadcasting message to ${totalUsers} users with concurrency ${concurrency} and ${originalDelayMs}ms delay`);
 
     let stopped = false;
     const abortController = new AbortController();
@@ -591,8 +597,15 @@ export class UserManager {
       await Promise.allSettled(chunkPromises);
 
       // Add delay between chunks (except for the last chunk) if not stopped
-      if (i + concurrency < usernames.length && delayMs > 0 && !stopped) {
-        await this.delay(delayMs);
+      if (i + concurrency < usernames.length && !stopped) {
+        let delayMs = originalDelayMs;
+        if (randomDelay) {
+          delayMs = Math.floor(Math.random() * (randomDelay.max - randomDelay.min + 1)) + randomDelay.min;
+        }
+        
+        if (delayMs > 0) {
+          await this.delay(delayMs);
+        }
       }
     }
 

@@ -20,6 +20,7 @@ export class TelegramBot {
   private botToken: string;
   private accountsFilePath: string = "./accounts.yml";
   private userStates: Map<string, string> = new Map();
+  private pendingBroadcasts: Map<string, { streamerNickname: string; message: string }> = new Map();
   private broadcastOptions: BroadcastOptions = { concurrency: 3, delayMs: 500 };
   private allowedUsers: Set<number> = new Set();
   private lastMessageUpdate: number = 0;
@@ -380,117 +381,12 @@ export class TelegramBot {
 
     const streamerNickname = args[0];
     const message = args.slice(1).join(" ");
+    const userId = this.getUserId(ctx);
 
-    const broadcastId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    this.activeBroadcasts.set(broadcastId, { shouldStop: false });
-    this.updateCounter = 0; // Reset counter for new broadcast
-    this.logger.info(`Created broadcast ${broadcastId}`);
+    this.pendingBroadcasts.set(userId, { streamerNickname, message });
+    this.userStates.set(userId, "waiting_delay_confirmation");
 
-    try {
-      const stopKeyboard = Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "🛑 ОСТАНОВИТЬ РАССЫЛКУ",
-            `stop_broadcast_${broadcastId}`,
-          ),
-        ],
-      ]);
-      this.logger.info(`Created stop button for broadcast ${broadcastId}`);
-
-      const statusMessage = await ctx.reply(
-        "🚀 Начинаю рассылку...",
-        stopKeyboard,
-      );
-      const startTime = Date.now();
-
-      const result = await this.userManager.broadcastMessageConcurrent(
-        streamerNickname,
-        message,
-        this.broadcastOptions,
-        () => this.getBroadcastStopStatus(broadcastId),
-        (progress) => {
-          const percentage = Math.round(
-            (progress.currentIndex / progress.totalUsers) * 100,
-          );
-          const progressBar = this.createProgressBar(percentage);
-
-          let statusText = `📢 Рассылка сообщений\n\n`;
-          statusText += `${progressBar} ${percentage}%\n\n`;
-          statusText += `👤 Текущий пользователь: ${progress.currentUser}\n`;
-          statusText += `📊 Прогресс: ${progress.currentIndex}/${progress.totalUsers}\n`;
-          statusText += `✅ Отправлено: ${progress.sent}\n`;
-          statusText += `❌ Ошибок: ${progress.failed}\n`;
-
-          if (progress.streamerNickname) {
-            statusText += `🎬 Стример: ${progress.streamerNickname}\n`;
-          }
-
-          if (progress.result && !progress.result.success) {
-            statusText += `\n⚠️ Последняя ошибка:\n${progress.result.error}\n`;
-          }
-
-          // Update status message with rate limiting protection (only every 5th update)
-          this.updateCounter++;
-          if (this.updateCounter % 5 === 0) {
-            this.updateTelegramMessage(
-              ctx,
-              statusMessage.message_id,
-              statusText,
-              stopKeyboard,
-            );
-          }
-        },
-      );
-
-      // Calculate execution time
-      const endTime = Date.now();
-      const executionTime = Math.round((endTime - startTime) / 1000);
-
-      // Prepare detailed summary
-      const total = result.sent + result.failed;
-      const successRate =
-        total > 0 ? Math.round((result.sent / total) * 100) : 0;
-
-      let finalMessage = result.stopped
-        ? `🛑 Рассылка остановлена!\n\n📊 ИТОГИ:\n`
-        : `✅ Рассылка завершена!\n\n📊 ИТОГИ:\n`;
-
-      finalMessage += `👥 Всего пользователей: ${total}\n`;
-      finalMessage += `✅ Успешно отправлено: ${result.sent}\n`;
-      finalMessage += `❌ Ошибок: ${result.failed}\n`;
-      finalMessage += `📈 Успешность: ${successRate}%\n`;
-      finalMessage += `⏱️ Время выполнения: ${executionTime} секунд\n`;
-
-      // Create error file if there were failures
-      let errorFile = null;
-      if (result.failed > 0) {
-        errorFile = await this.createErrorFile(result.results);
-      }
-
-      await ctx.telegram.editMessageText(
-        ctx.chat?.id,
-        statusMessage.message_id,
-        undefined,
-        finalMessage,
-      );
-
-      // Send error file if errors occurred
-      if (errorFile) {
-        await this.sendErrorFile(ctx, errorFile);
-      }
-
-      // Clean up broadcast tracking
-      this.activeBroadcasts.delete(broadcastId);
-
-      this.logger.info(
-        `Broadcast completed via Telegram bot: ${result.sent} sent, ${result.failed} failed`,
-      );
-    } catch (error) {
-      // Clean up broadcast tracking on error
-      this.activeBroadcasts.delete(broadcastId);
-      ctx.reply(`❌ Ошибка рассылки: ${error}`);
-      this.logger.error(`Broadcast failed via Telegram bot: ${error}`);
-    }
+    ctx.reply("Нужна ли рандомная задержка между сообщениями (10-40 секунд)? (да/нет)");
   }
 
   private async handleSendMessage(ctx: Context): Promise<void> {
@@ -1066,6 +962,9 @@ export class TelegramBot {
       case state === "waiting_broadcast_with_slots_data":
         await this.processBroadcastWithSlots(ctx, text);
         break;
+      case state === "waiting_delay_confirmation":
+        await this.processDelayConfirmation(ctx, text);
+        break;
       case state === "waiting_send_as_user_data":
         await this.processSendAsUserData(ctx, text);
         break;
@@ -1179,6 +1078,34 @@ export class TelegramBot {
 
     const streamerNickname = parts[0];
     const message = parts.slice(1).join(" ");
+    const userId = this.getUserId(ctx);
+
+    this.pendingBroadcasts.set(userId, { streamerNickname, message });
+    this.userStates.set(userId, "waiting_delay_confirmation");
+
+    ctx.reply("Нужна ли рандомная задержка между сообщениями (10-40 секунд)? (да/нет)");
+  }
+
+  private async processDelayConfirmation(ctx: Context, answer: string): Promise<void> {
+    const userId = this.getUserId(ctx);
+    const pendingData = this.pendingBroadcasts.get(userId);
+
+    if (!pendingData) {
+        ctx.reply("Что-то пошло не так, попробуйте начать рассылку заново.");
+        return;
+    }
+
+    this.pendingBroadcasts.delete(userId);
+    this.userStates.delete(userId);
+
+    const useRandomDelay = answer.trim().toLowerCase() === 'да';
+
+    const { streamerNickname, message } = pendingData;
+    const broadcastOptions = { ...this.broadcastOptions };
+
+    if (useRandomDelay) {
+        (broadcastOptions as any).randomDelay = { min: 10000, max: 40000 };
+    }
 
     const broadcastId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     this.activeBroadcasts.set(broadcastId, { shouldStop: false });
@@ -1205,7 +1132,7 @@ export class TelegramBot {
       const result = await this.userManager.broadcastMessageConcurrent(
         streamerNickname,
         message,
-        this.broadcastOptions,
+        broadcastOptions,
         () => this.getBroadcastStopStatus(broadcastId),
         (progress) => {
           const percentage = Math.round(

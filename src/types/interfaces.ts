@@ -24,4 +24,8 @@ export interface SendMessageResponse {
 export interface BroadcastOptions {
   concurrency?: number;
   delayMs?: number;
+  randomDelay?: {
+    min: number;
+    max: number;
+  };
 }
