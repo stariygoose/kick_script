@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  kick-bot:
+    build: .
+    container_name: kick-bot
+    restart: always
+    # It is recommended to manage your environment variables on the server.
+    # You can create a .env file in the same directory as this docker-compose.yml
+    # and list your environment variables there.
+    # For example:
+    # BOT_TOKEN=your_telegram_bot_token
+    # ADMIN_CHAT_ID=your_admin_chat_id
+    # ALLOWED_USERS=12345,67890
+    #
+    # Then, you can uncomment the line below to use the .env file.
+    # env_file:
+    #   - .env
