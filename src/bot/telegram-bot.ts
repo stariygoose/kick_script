@@ -474,7 +474,7 @@ export class TelegramBot {
       Math.ceil(userCount / (this.broadcastOptions.concurrency || 1)) *
       ((this.broadcastOptions.delayMs || 0) / 1000);
 
-    ctx.reply(`📊 Статистика:
+    let statsMessage = `📊 Статистика:
 👥 Всего аккаунтов: ${userCount}
 🎬 Всего стримеров: ${streamersCount}
 📝 Файл: ${this.accountsFilePath}
@@ -482,8 +482,18 @@ export class TelegramBot {
 
 ⚡ Настройки рассылки:
 🔄 Конкурентность: ${this.broadcastOptions.concurrency}
-⏱️ Задержка: ${this.broadcastOptions.delayMs}ms
-📈 Примерное время рассылки: ~${estimatedTime}с`);
+⏱️ Задержка: ${this.broadcastOptions.delayMs}ms`;
+
+    if (this.broadcastOptions.randomDelay) {
+      const { min, max } = this.broadcastOptions.randomDelay;
+      statsMessage += `\n🎲 Случайная задержка: от ${min / 1000} до ${max / 1000}с`;
+    } else {
+      statsMessage += `\n🎲 Случайная задержка: ❌`;
+    }
+
+    statsMessage += `\n📈 Примерное время рассылки: ~${estimatedTime}с`;
+
+    ctx.reply(statsMessage);
   }
 
   private async handleSetBroadcast(ctx: Context): Promise<void> {
@@ -516,7 +526,11 @@ export class TelegramBot {
       return;
     }
 
+    const randomDelay = this.broadcastOptions.randomDelay;
     this.broadcastOptions = { concurrency, delayMs };
+    if (randomDelay) {
+      this.broadcastOptions.randomDelay = randomDelay;
+    }
 
     // Calculate new estimated time
     const userCount = this.userManager.getUserCount();
@@ -855,7 +869,11 @@ export class TelegramBot {
     options: BroadcastOptions,
     presetName: string,
   ): void {
+    const randomDelay = this.broadcastOptions.randomDelay;
     this.broadcastOptions = options;
+    if (randomDelay) {
+      this.broadcastOptions.randomDelay = randomDelay;
+    }
 
     const userCount = this.userManager.getUserCount();
     const estimatedTime =
@@ -1160,24 +1178,23 @@ export class TelegramBot {
     this.updateCounter = 0; // Reset counter for new broadcast
     this.logger.info(`Created broadcast ${broadcastId}`);
 
-    try {
-      const stopKeyboard = Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "🛑 ОСТАНОВИТЬ РАССЫЛКУ",
-            `stop_broadcast_${broadcastId}`,
-          ),
-        ],
-      ]);
-      this.logger.info(`Created stop button for broadcast ${broadcastId}`);
+    const stopKeyboard = Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          "🛑 ОСТАНОВИТЬ РАССЫЛКУ",
+          `stop_broadcast_${broadcastId}`,
+        ),
+      ],
+    ]);
+    this.logger.info(`Created stop button for broadcast ${broadcastId}`);
 
-      const statusMessage = await ctx.reply(
-        "🚀 Начинаю рассылку...",
-        stopKeyboard,
-      );
+    ctx.reply(
+      "🚀 Начинаю рассылку...",
+      stopKeyboard,
+    ).then(statusMessage => {
       const startTime = Date.now();
 
-      const result = await this.userManager.broadcastMessageConcurrent(
+      this.userManager.broadcastMessageConcurrent(
         streamerNickname,
         message,
         broadcastOptions,
@@ -1214,53 +1231,46 @@ export class TelegramBot {
             );
           }
         },
-      );
+      ).then(async result => {
+        const endTime = Date.now();
+        const executionTime = Math.round((endTime - startTime) / 1000);
+        const total = result.sent + result.failed;
+        const successRate = total > 0 ? Math.round((result.sent / total) * 100) : 0;
 
-      // Calculate execution time
-      const endTime = Date.now();
-      const executionTime = Math.round((endTime - startTime) / 1000);
+        let finalMessage = result.stopped
+          ? `🛑 Рассылка остановлена!\n\n📊 ИТОГИ:\n`
+          : `✅ Рассылка завершена!\n\n📊 ИТОГИ:\n`;
 
-      // Prepare detailed summary
-      const total = result.sent + result.failed;
-      const successRate =
-        total > 0 ? Math.round((result.sent / total) * 100) : 0;
+        finalMessage += `👥 Всего пользователей: ${total}\n`;
+        finalMessage += `✅ Успешно отправлено: ${result.sent}\n`;
+        finalMessage += `❌ Ошибок: ${result.failed}\n`;
+        finalMessage += `📈 Успешность: ${successRate}%\n`;
+        finalMessage += `⏱️ Время выполнения: ${executionTime} секунд\n`;
 
-      let finalMessage = result.stopped
-        ? `🛑 Рассылка остановлена!\n\n📊 ИТОГИ:\n`
-        : `✅ Рассылка завершена!\n\n📊 ИТОГИ:\n`;
+        let errorFile = null;
+        if (result.failed > 0) {
+          errorFile = await this.createErrorFile(result.results);
+        }
 
-      finalMessage += `👥 Всего пользователей: ${total}\n`;
-      finalMessage += `✅ Успешно отправлено: ${result.sent}\n`;
-      finalMessage += `❌ Ошибок: ${result.failed}\n`;
-      finalMessage += `📈 Успешность: ${successRate}%\n`;
-      finalMessage += `⏱️ Время выполнения: ${executionTime} секунд\n`;
+        await ctx.telegram.editMessageText(
+          ctx.chat?.id,
+          statusMessage.message_id,
+          undefined,
+          finalMessage,
+          this.getBackToMenuKeyboard(),
+        );
 
-      // Create error file if there were failures
-      let errorFile = null;
-      if (result.failed > 0) {
-        errorFile = await this.createErrorFile(result.results);
-      }
+        if (errorFile) {
+          await this.sendErrorFile(ctx, errorFile);
+        }
 
-      await ctx.telegram.editMessageText(
-        ctx.chat?.id,
-        statusMessage.message_id,
-        undefined,
-        finalMessage,
-        this.getBackToMenuKeyboard(),
-      );
-
-      // Send error file if errors occurred
-      if (errorFile) {
-        await this.sendErrorFile(ctx, errorFile);
-      }
-
-      // Clean up broadcast tracking
-      this.activeBroadcasts.delete(broadcastId);
-    } catch (error) {
-      // Clean up broadcast tracking on error
-      this.activeBroadcasts.delete(broadcastId);
-      ctx.reply(`❌ Ошибка рассылки: ${error}`, this.getBackToMenuKeyboard());
-    }
+        this.activeBroadcasts.delete(broadcastId);
+      }).catch(async error => {
+        this.activeBroadcasts.delete(broadcastId);
+        await ctx.reply(`❌ Ошибка рассылки: ${error}`, this.getBackToMenuKeyboard());
+        this.logger.error(`Broadcast failed via Telegram bot: ${error}`);
+      });
+    });
   }
 
   private async processBroadcastWithSlots(
@@ -1283,24 +1293,23 @@ export class TelegramBot {
     this.updateCounter = 0;
     this.logger.info(`Created broadcast with slots ${broadcastId}`);
 
-    try {
-      const stopKeyboard = Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "🛑 ОСТАНОВИТЬ РАССЫЛКУ",
-            `stop_broadcast_${broadcastId}`,
-          ),
-        ],
-      ]);
-      this.logger.info(`Created stop button for broadcast ${broadcastId}`);
+    const stopKeyboard = Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          "🛑 ОСТАНОВИТЬ РАССЫЛКУ",
+          `stop_broadcast_${broadcastId}`,
+        ),
+      ],
+    ]);
+    this.logger.info(`Created stop button for broadcast ${broadcastId}`);
 
-      const statusMessage = await ctx.reply(
-        "🚀 Начинаю рассылку со слотами...",
-        stopKeyboard,
-      );
+    ctx.reply(
+      "🚀 Начинаю рассылку со слотами...",
+      stopKeyboard,
+    ).then(statusMessage => {
       const startTime = Date.now();
 
-      const result = await this.userManager.broadcastMessageWithSlots(
+      this.userManager.broadcastMessageWithSlots(
         streamerNickname,
         baseWord,
         this.slotWords,
@@ -1337,52 +1346,51 @@ export class TelegramBot {
             );
           }
         },
-      );
+      ).then(async result => {
+        const endTime = Date.now();
+        const executionTime = Math.round((endTime - startTime) / 1000);
 
-      const endTime = Date.now();
-      const executionTime = Math.round((endTime - startTime) / 1000);
+        const total = result.sent + result.failed;
+        const successRate =
+          total > 0 ? Math.round((result.sent / total) * 100) : 0;
 
-      const total = result.sent + result.failed;
-      const successRate =
-        total > 0 ? Math.round((result.sent / total) * 100) : 0;
+        let finalMessage = result.stopped
+          ? `🛑 Рассылка остановлена!\n\n📊 ИТОГИ:\n`
+          : `✅ Рассылка со слотами завершена!\n\n📊 ИТОГИ:\n`;
 
-      let finalMessage = result.stopped
-        ? `🛑 Рассылка остановлена!\n\n📊 ИТОГИ:\n`
-        : `✅ Рассылка со слотами завершена!\n\n📊 ИТОГИ:\n`;
+        finalMessage += `👥 Всего пользователей: ${total}\n`;
+        finalMessage += `✅ Успешно отправлено: ${result.sent}\n`;
+        finalMessage += `❌ Ошибок: ${result.failed}\n`;
+        finalMessage += `📈 Успешность: ${successRate}%\n`;
+        finalMessage += `⏱️ Время выполнения: ${executionTime} секунд\n`;
 
-      finalMessage += `👥 Всего пользователей: ${total}\n`;
-      finalMessage += `✅ Успешно отправлено: ${result.sent}\n`;
-      finalMessage += `❌ Ошибок: ${result.failed}\n`;
-      finalMessage += `📈 Успешность: ${successRate}%\n`;
-      finalMessage += `⏱️ Время выполнения: ${executionTime} секунд\n`;
+        let errorFile = null;
+        if (result.failed > 0) {
+          errorFile = await this.createErrorFile(result.results);
+        }
 
-      let errorFile = null;
-      if (result.failed > 0) {
-        errorFile = await this.createErrorFile(result.results);
-      }
+        await ctx.telegram.editMessageText(
+          ctx.chat?.id,
+          statusMessage.message_id,
+          undefined,
+          finalMessage,
+          this.getBackToMenuKeyboard(),
+        );
 
-      await ctx.telegram.editMessageText(
-        ctx.chat?.id,
-        statusMessage.message_id,
-        undefined,
-        finalMessage,
-        this.getBackToMenuKeyboard(),
-      );
+        if (errorFile) {
+          await this.sendErrorFile(ctx, errorFile);
+        }
 
-      if (errorFile) {
-        await this.sendErrorFile(ctx, errorFile);
-      }
+        if (result.reportFile) {
+          await this.sendReportFile(ctx, result.reportFile);
+        }
 
-      // Send broadcast report file
-      if (result.reportFile) {
-        await this.sendReportFile(ctx, result.reportFile);
-      }
-
-      this.activeBroadcasts.delete(broadcastId);
-    } catch (error) {
-      this.activeBroadcasts.delete(broadcastId);
-      ctx.reply(`❌ Ошибка рассылки: ${error}`, this.getBackToMenuKeyboard());
-    }
+        this.activeBroadcasts.delete(broadcastId);
+      }).catch(async error => {
+        this.activeBroadcasts.delete(broadcastId);
+        await ctx.reply(`❌ Ошибка рассылки: ${error}`, this.getBackToMenuKeyboard());
+      });
+    });
   }
 
   private async processSendAsUserData(
