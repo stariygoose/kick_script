@@ -226,6 +226,13 @@ export class TelegramBot {
       );
     });
 
+    this.bot.action("set_random_delay", (ctx) => {
+      ctx.answerCbQuery();
+      const userId = this.getUserId(ctx);
+      this.userStates.set(userId, "waiting_random_delay_input");
+      ctx.editMessageText("Введите интервал случайной задержки в секундах в формате 'мин-макс' (например, 10-40):");
+    });
+
     this.bot.action("export_config", (ctx) => {
       ctx.answerCbQuery();
       this.handleExport(ctx);
@@ -386,7 +393,13 @@ export class TelegramBot {
     this.pendingBroadcasts.set(userId, { streamerNickname, message });
     this.userStates.set(userId, "waiting_delay_confirmation");
 
-    ctx.reply("Нужна ли рандомная задержка между сообщениями (10-40 секунд)? (да/нет)");
+    let delayMessage = "10-40 секунд";
+    if (this.broadcastOptions.randomDelay) {
+      const { min, max } = this.broadcastOptions.randomDelay;
+      delayMessage = `от ${min / 1000} до ${max / 1000} секунд`;
+    }
+
+    ctx.reply(`Нужна ли рандомная задержка между сообщениями (${delayMessage})? (да/нет)`);
   }
 
   private async handleSendMessage(ctx: Context): Promise<void> {
@@ -819,6 +832,7 @@ export class TelegramBot {
           "set_balanced",
         ),
       ],
+      [Markup.button.callback("🎲 Установить случайную задержку", "set_random_delay")],
       [Markup.button.callback("⬅️ Назад", "main_menu")],
     ]);
 
@@ -968,7 +982,31 @@ export class TelegramBot {
       case state === "waiting_send_as_user_data":
         await this.processSendAsUserData(ctx, text);
         break;
+      case state === "waiting_random_delay_input":
+        await this.processRandomDelayInput(ctx, text);
+        break;
     }
+  }
+
+  private async processRandomDelayInput(ctx: Context, input: string): Promise<void> {
+    const parts = input.trim().split("-");
+    if (parts.length !== 2) {
+      ctx.reply("❌ Неверный формат. Используйте: мин-макс", this.getBackToMenuKeyboard());
+      return;
+    }
+
+    const min = parseInt(parts[0]);
+    const max = parseInt(parts[1]);
+
+    if (isNaN(min) || isNaN(max) || min < 0 || max < 0 || min > max) {
+      ctx.reply("❌ Неверные значения. Убедитесь, что 'мин' и 'макс' являются положительными числами и 'мин' не больше 'макс'.", this.getBackToMenuKeyboard());
+      return;
+    }
+
+    this.broadcastOptions.randomDelay = { min: min * 1000, max: max * 1000 };
+
+    await ctx.reply(`✅ Случайная задержка установлена в диапазоне от ${min} до ${max} секунд.`, this.getBackToMenuKeyboard());
+    this.logger.info(`Custom random delay set to ${min}-${max} seconds`);
   }
 
   private async processAddUser(ctx: Context, input: string): Promise<void> {
@@ -1083,7 +1121,13 @@ export class TelegramBot {
     this.pendingBroadcasts.set(userId, { streamerNickname, message });
     this.userStates.set(userId, "waiting_delay_confirmation");
 
-    ctx.reply("Нужна ли рандомная задержка между сообщениями (10-40 секунд)? (да/нет)");
+    let delayMessage = "10-40 секунд";
+    if (this.broadcastOptions.randomDelay) {
+      const { min, max } = this.broadcastOptions.randomDelay;
+      delayMessage = `от ${min / 1000} до ${max / 1000} секунд`;
+    }
+
+    ctx.reply(`Нужна ли рандомная задержка между сообщениями (${delayMessage})? (да/нет)`);
   }
 
   private async processDelayConfirmation(ctx: Context, answer: string): Promise<void> {
@@ -1104,7 +1148,11 @@ export class TelegramBot {
     const broadcastOptions = { ...this.broadcastOptions };
 
     if (useRandomDelay) {
-        (broadcastOptions as any).randomDelay = { min: 10000, max: 40000 };
+        if (!broadcastOptions.randomDelay) {
+            broadcastOptions.randomDelay = { min: 10000, max: 40000 };
+        }
+    } else {
+        delete broadcastOptions.randomDelay;
     }
 
     const broadcastId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

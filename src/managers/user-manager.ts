@@ -427,56 +427,34 @@ export class UserManager {
     }
 
     const chatId = streamer.chatId;
-    const { concurrency: originalConcurrency = 5, delayMs: originalDelayMs = 200, randomDelay } = options;
-    
-    let concurrency = originalConcurrency;
-    if (randomDelay) {
-      concurrency = 1;
-    }
-    
+    const { concurrency = 5, delayMs = 200, randomDelay } = options;
     const results: SendMessageResponse[] = [];
     let sent = 0;
     let failed = 0;
     const usernames = Array.from(this.senders.keys());
     const totalUsers = usernames.length;
+    let processedCount = 0;
 
-    this.logger.info(`Broadcasting message to ${totalUsers} users with concurrency ${concurrency} and ${originalDelayMs}ms delay`);
+    this.logger.info(`Broadcasting message to ${totalUsers} users with concurrency ${concurrency}`);
 
     let stopped = false;
     const abortController = new AbortController();
     const recentResults: Array<{ username: string; success: boolean; error?: string }> = [];
     let logBatchCounter = 0;
 
-    // Process users in chunks with concurrency limit
-    for (let i = 0; i < usernames.length; i += concurrency) {
-      // Check if broadcast should be stopped
-      if (stopCallback) {
-        const shouldStop = stopCallback();
-        if (shouldStop) {
+    const userChunks: { username: string, originalIndex: number }[][] = Array.from({ length: concurrency }, () => []);
+    for (let i = 0; i < totalUsers; i++) {
+        userChunks[i % concurrency].push({ username: usernames[i], originalIndex: i });
+    }
+
+    const workerPromises = userChunks.map(async (chunk) => {
+      for (const { username, originalIndex } of chunk) {
+        if (stopCallback && stopCallback()) {
           stopped = true;
-          abortController.abort(); // Cancel ongoing requests
-          this.logger.info(`Broadcast stopped by user request at chunk ${i}/${usernames.length}, aborting ongoing requests`);
+          abortController.abort();
           break;
         }
-      }
 
-      const chunk = usernames.slice(i, i + concurrency);
-
-      // Process chunk concurrently
-      const chunkPromises = chunk.map(async (username, chunkIndex) => {
-        // Check stop flag before processing each user
-        if (stopCallback && stopCallback()) {
-          const skipResult: SendMessageResponse = {
-            success: false,
-            error: `User: ${username} - Broadcast stopped`
-          };
-          const globalIndex = i + chunkIndex;
-          results[globalIndex] = skipResult;
-          failed++;
-          return;
-        }
-
-        const globalIndex = i + chunkIndex;
         const sender = this.senders.get(username);
 
         if (!sender) {
@@ -484,132 +462,69 @@ export class UserManager {
             success: false,
             error: `User: ${username} - Sender not found`
           };
-          results[globalIndex] = errorResult;
+          results[originalIndex] = errorResult;
           failed++;
+        } else {
+          try {
+            const result = await sender.sendMessage(chatId, message, abortController.signal);
+            results[originalIndex] = result;
 
-          if (progressCallback) {
-            setImmediate(() => {
-              progressCallback({
-                currentUser: username,
-                currentIndex: globalIndex + 1,
-                totalUsers,
-                sent,
-                failed,
-                result: errorResult,
-                streamerNickname: streamerNickname
-              });
-            });
-          }
-          return;
-        }
-
-        try {
-          // Check stop flag before sending
-          if (stopCallback && stopCallback()) {
-            const skipResult: SendMessageResponse = {
+            if (result.success) {
+              sent++;
+              recentResults.push({ username, success: true });
+            } else {
+              failed++;
+              recentResults.push({ username, success: false, error: result.error });
+            }
+          } catch (error: any) {
+            failed++;
+            let errorMessage = `Unexpected error: ${error}`;
+            if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+              errorMessage = `Request cancelled (broadcast stopped)`;
+            }
+            const errorResult: SendMessageResponse = {
               success: false,
-              error: `User: ${username} - Broadcast stopped`
+              error: `User: ${username} - ${errorMessage}`
             };
-            results[globalIndex] = skipResult;
-            failed++;
-            return;
+            results[originalIndex] = errorResult;
+            recentResults.push({ username, success: false, error: errorMessage });
           }
-
-          const result = await sender.sendMessage(chatId, message, abortController.signal);
-          results[globalIndex] = result;
-
-          if (result.success) {
-            sent++;
-            // Add to recent results batch
-            recentResults.push({ username, success: true });
-          } else {
-            failed++;
-            // Add to recent results batch with error
-            recentResults.push({ username, success: false, error: result.error });
-          }
-
-          // Log batch every 20 results
-          logBatchCounter++;
-          if (logBatchCounter >= 20) {
-            this.logResultsBatch(recentResults);
-            recentResults.length = 0; // Clear array
-            logBatchCounter = 0;
-          }
-
-          // Call progress callback if provided (non-blocking)
-          if (progressCallback) {
-            setImmediate(() => {
-              progressCallback({
-                currentUser: username,
-                currentIndex: globalIndex + 1,
-                totalUsers,
-                sent,
-                failed,
-                result,
-                streamerNickname: streamerNickname
-              });
-            });
-          }
-
-        } catch (error: any) {
-          failed++;
-          let errorMessage = `Unexpected error: ${error}`;
-          
-          if (error.name === 'AbortError' || error.message?.includes('aborted')) {
-            errorMessage = `Request cancelled (broadcast stopped)`;
-          }
-          
-          const errorResult: SendMessageResponse = {
-            success: false,
-            error: `User: ${username} - ${errorMessage}`
-          };
-          results[globalIndex] = errorResult;
-          
-          // Add to recent results batch
-          recentResults.push({ username, success: false, error: errorMessage });
-
-          // Log batch every 20 results
-          logBatchCounter++;
-          if (logBatchCounter >= 20) {
-            this.logResultsBatch(recentResults);
-            recentResults.length = 0; // Clear array
-            logBatchCounter = 0;
-          }
-
-          // Call progress callback for error too (non-blocking)
-          if (progressCallback) {
-            setImmediate(() => {
-              progressCallback({
-                currentUser: username,
-                currentIndex: globalIndex + 1,
-                totalUsers,
-                sent,
-                failed,
-                result: errorResult,
-                streamerNickname: streamerNickname
-              });
-            });
-          }
-        }
-      });
-
-      // Wait for chunk to complete but don't wait for callbacks
-      await Promise.allSettled(chunkPromises);
-
-      // Add delay between chunks (except for the last chunk) if not stopped
-      if (i + concurrency < usernames.length && !stopped) {
-        let delayMs = originalDelayMs;
-        if (randomDelay) {
-          delayMs = Math.floor(Math.random() * (randomDelay.max - randomDelay.min + 1)) + randomDelay.min;
         }
         
-        if (delayMs > 0) {
+        processedCount++;
+
+        if (progressCallback) {
+          setImmediate(() => {
+            progressCallback({
+              currentUser: username,
+              currentIndex: processedCount,
+              totalUsers,
+              sent,
+              failed,
+              result: results[originalIndex],
+              streamerNickname: streamerNickname
+            });
+          });
+        }
+
+        logBatchCounter++;
+        if (logBatchCounter >= 20) {
+          this.logResultsBatch(recentResults);
+          recentResults.length = 0;
+          logBatchCounter = 0;
+        }
+
+        if (randomDelay) {
+          const randomWait = Math.floor(Math.random() * (randomDelay.max - randomDelay.min + 1)) + randomDelay.min;
+          await this.delay(randomWait);
+        } else if (delayMs > 0) {
           await this.delay(delayMs);
         }
       }
-    }
+    });
 
-    // Log remaining results if any
+    await Promise.all(workerPromises);
+
     if (recentResults.length > 0) {
       this.logResultsBatch(recentResults);
     }
@@ -736,14 +651,15 @@ export class UserManager {
     }
 
     const chatId = streamer.chatId;
-    const { concurrency = 5, delayMs = 200 } = options;
+    const { concurrency = 5, delayMs = 200, randomDelay } = options;
     const results: SendMessageResponse[] = [];
     let sent = 0;
     let failed = 0;
     const usernames = Array.from(this.senders.keys());
     const totalUsers = usernames.length;
+    let processedCount = 0;
 
-    this.logger.info(`Broadcasting message with slots to ${totalUsers} users with concurrency ${concurrency} and ${delayMs}ms delay`);
+    this.logger.info(`Broadcasting message with slots to ${totalUsers} users with concurrency ${concurrency}`);
 
     let stopped = false;
     const abortController = new AbortController();
@@ -751,36 +667,19 @@ export class UserManager {
     let logBatchCounter = 0;
     const messageReport: Array<{ username: string; message: string }> = [];
 
-    // Process users in chunks with concurrency limit
-    for (let i = 0; i < usernames.length; i += concurrency) {
-      // Check if broadcast should be stopped
-      if (stopCallback) {
-        const shouldStop = stopCallback();
-        if (shouldStop) {
+    const userChunks: { username: string, originalIndex: number }[][] = Array.from({ length: concurrency }, () => []);
+    for (let i = 0; i < totalUsers; i++) {
+        userChunks[i % concurrency].push({ username: usernames[i], originalIndex: i });
+    }
+
+    const workerPromises = userChunks.map(async (chunk) => {
+      for (const { username, originalIndex } of chunk) {
+        if (stopCallback && stopCallback()) {
           stopped = true;
           abortController.abort();
-          this.logger.info(`Broadcast with slots stopped by user request at chunk ${i}/${usernames.length}`);
           break;
         }
-      }
-
-      const chunk = usernames.slice(i, i + concurrency);
-
-      // Process chunk concurrently
-      const chunkPromises = chunk.map(async (username, chunkIndex) => {
-        // Check stop flag before processing each user
-        if (stopCallback && stopCallback()) {
-          const skipResult: SendMessageResponse = {
-            success: false,
-            error: `User: ${username} - Broadcast stopped`
-          };
-          const globalIndex = i + chunkIndex;
-          results[globalIndex] = skipResult;
-          failed++;
-          return;
-        }
-
-        const globalIndex = i + chunkIndex;
+        
         const sender = this.senders.get(username);
 
         if (!sender) {
@@ -788,133 +687,77 @@ export class UserManager {
             success: false,
             error: `User: ${username} - Sender not found`
           };
-          results[globalIndex] = errorResult;
+          results[originalIndex] = errorResult;
           failed++;
+        } else {
+          try {
+            const slotWord = slotWords[originalIndex % slotWords.length];
+            const message = `${baseWord} ${slotWord}`;
 
-          if (progressCallback) {
-            setImmediate(() => {
-              progressCallback({
-                currentUser: username,
-                currentIndex: globalIndex + 1,
-                totalUsers,
-                sent,
-                failed,
-                result: errorResult,
-                streamerNickname: streamerNickname
-              });
-            });
-          }
-          return;
-        }
+            const result = await sender.sendMessage(chatId, message, abortController.signal);
+            results[originalIndex] = result;
 
-        try {
-          // Check stop flag before sending
-          if (stopCallback && stopCallback()) {
-            const skipResult: SendMessageResponse = {
+            if (result.success) {
+              sent++;
+              recentResults.push({ username, success: true });
+              messageReport.push({ username, message });
+            } else {
+              failed++;
+              recentResults.push({ username, success: false, error: result.error });
+            }
+          } catch (error: any) {
+            failed++;
+            let errorMessage = `Unexpected error: ${error}`;
+            if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+              errorMessage = `Request cancelled (broadcast stopped)`;
+            }
+            const errorResult: SendMessageResponse = {
               success: false,
-              error: `User: ${username} - Broadcast stopped`
+              error: `User: ${username} - ${errorMessage}`
             };
-            results[globalIndex] = skipResult;
-            failed++;
-            return;
-          }
-
-          // Rotate slot words: get word by index (modulo array length for cycling)
-          const slotWord = slotWords[globalIndex % slotWords.length];
-          const message = `${baseWord} ${slotWord}`;
-
-          const result = await sender.sendMessage(chatId, message, abortController.signal);
-          results[globalIndex] = result;
-
-          if (result.success) {
-            sent++;
-            recentResults.push({ username, success: true });
-            // Save message info for report
-            messageReport.push({ username, message });
-          } else {
-            failed++;
-            recentResults.push({ username, success: false, error: result.error });
-          }
-
-          // Log batch every 20 results
-          logBatchCounter++;
-          if (logBatchCounter >= 20) {
-            this.logResultsBatch(recentResults);
-            recentResults.length = 0;
-            logBatchCounter = 0;
-          }
-
-          // Call progress callback if provided (non-blocking)
-          if (progressCallback) {
-            setImmediate(() => {
-              progressCallback({
-                currentUser: username,
-                currentIndex: globalIndex + 1,
-                totalUsers,
-                sent,
-                failed,
-                result,
-                streamerNickname: streamerNickname
-              });
-            });
-          }
-
-        } catch (error: any) {
-          failed++;
-          let errorMessage = `Unexpected error: ${error}`;
-
-          if (error.name === 'AbortError' || error.message?.includes('aborted')) {
-            errorMessage = `Request cancelled (broadcast stopped)`;
-          }
-
-          const errorResult: SendMessageResponse = {
-            success: false,
-            error: `User: ${username} - ${errorMessage}`
-          };
-          results[globalIndex] = errorResult;
-
-          recentResults.push({ username, success: false, error: errorMessage });
-
-          // Log batch every 20 results
-          logBatchCounter++;
-          if (logBatchCounter >= 20) {
-            this.logResultsBatch(recentResults);
-            recentResults.length = 0;
-            logBatchCounter = 0;
-          }
-
-          // Call progress callback for error too (non-blocking)
-          if (progressCallback) {
-            setImmediate(() => {
-              progressCallback({
-                currentUser: username,
-                currentIndex: globalIndex + 1,
-                totalUsers,
-                sent,
-                failed,
-                result: errorResult,
-                streamerNickname: streamerNickname
-              });
-            });
+            results[originalIndex] = errorResult;
+            recentResults.push({ username, success: false, error: errorMessage });
           }
         }
-      });
 
-      // Wait for chunk to complete but don't wait for callbacks
-      await Promise.allSettled(chunkPromises);
+        processedCount++;
 
-      // Add delay between chunks (except for the last chunk) if not stopped
-      if (i + concurrency < usernames.length && delayMs > 0 && !stopped) {
-        await this.delay(delayMs);
+        if (progressCallback) {
+          setImmediate(() => {
+            progressCallback({
+              currentUser: username,
+              currentIndex: processedCount,
+              totalUsers,
+              sent,
+              failed,
+              result: results[originalIndex],
+              streamerNickname: streamerNickname
+            });
+          });
+        }
+
+        logBatchCounter++;
+        if (logBatchCounter >= 20) {
+          this.logResultsBatch(recentResults);
+          recentResults.length = 0;
+          logBatchCounter = 0;
+        }
+
+        if (randomDelay) {
+          const randomWait = Math.floor(Math.random() * (randomDelay.max - randomDelay.min + 1)) + randomDelay.min;
+          await this.delay(randomWait);
+        } else if (delayMs > 0) {
+          await this.delay(delayMs);
+        }
       }
-    }
+    });
 
-    // Log remaining results if any
+    await Promise.all(workerPromises);
+
     if (recentResults.length > 0) {
       this.logResultsBatch(recentResults);
     }
 
-    // Create report file with username = message format
     let reportFilePath: string | undefined = undefined;
     if (messageReport.length > 0) {
       try {
