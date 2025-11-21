@@ -15,3 +15,6 @@ services:
     # Then, you can uncomment the line below to use the .env file.
     # env_file:
     #   - .env
+    volumes:
+      - ./accounts.yml:/usr/src/app/accounts.yml
+      - ./logs:/usr/src/app/logs
