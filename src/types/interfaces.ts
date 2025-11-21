@@ -21,6 +21,11 @@ export interface SendMessageResponse {
   error?: string;
 }
 
+export interface SendMessageFromNextUserResult {
+  response: SendMessageResponse;
+  username: string | null;
+}
+
 export interface BroadcastOptions {
   concurrency?: number;
   delayMs?: number;

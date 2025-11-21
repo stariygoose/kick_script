@@ -6,6 +6,7 @@ import {
   StreamerConfig,
   BroadcastOptions,
   SendMessageResponse,
+  SendMessageFromNextUserResult,
 } from "../types/interfaces.js";
 import { writeFileSync, readFileSync, existsSync, unlinkSync } from "fs";
 import path from "path";
@@ -256,6 +257,15 @@ export class TelegramBot {
     this.bot.action("send_as_user", (ctx) => {
       ctx.answerCbQuery();
       this.startSendAsUserProcess(ctx);
+    });
+
+    this.bot.action("solo_sms_zloy", (ctx) => {
+      ctx.answerCbQuery();
+      const userId = this.getUserId(ctx);
+      this.userStates.set(userId, "waiting_solo_sms_zloy_message");
+      ctx.editMessageText(
+        "📲 Соло смс злому\n\nВведите сообщение для отправки стримеру zloyn:",
+      );
     });
 
     this.bot.action(/^stop_broadcast_(.+)$/, (ctx) => {
@@ -752,6 +762,7 @@ export class TelegramBot {
       [Markup.button.callback("🎬 Управление стримерами", "streamers_menu")],
       [Markup.button.callback("📢 Рассылка сообщений", "broadcast_menu")],
       [Markup.button.callback("💬 Отправить от пользователя", "send_as_user")],
+      [Markup.button.callback("📲 Соло смс злому", "solo_sms_zloy")],
       [Markup.button.callback("⚡ Настройки рассылки", "broadcast_settings")],
       [Markup.button.callback("📁 Файлы", "files_menu")],
       [Markup.button.callback("📊 Статистика", "show_stats")],
@@ -1021,6 +1032,35 @@ export class TelegramBot {
       case state === "waiting_random_delay_input":
         await this.processRandomDelayInput(ctx, text);
         break;
+      case state === "waiting_solo_sms_zloy_message":
+        await this.processSoloSmsZloy(ctx, text);
+        break;
+    }
+  }
+
+  private async processSoloSmsZloy(ctx: Context, text: string): Promise<void> {
+    try {
+      const { response, username } =
+        await this.userManager.sendMessageFromNextUser("xweqixms", text);
+
+      if (response.success) {
+        ctx.reply(
+          `✅ Сообщение успешно отправлено стримеру zloyn от аккаунта ${
+            username || "неизвестного"
+          }!`,
+          this.getBackToMenuKeyboard(),
+        );
+      } else {
+        ctx.reply(
+          `❌ Не удалось отправить сообщение от аккаунта ${
+            username || "неизвестного"
+          }: ${response.error}`,
+          this.getBackToMenuKeyboard(),
+        );
+      }
+    } catch (error) {
+      ctx.reply(`❌ Произошла ошибка: ${error}`, this.getBackToMenuKeyboard());
+      this.logger.error(`Failed to process solo sms to zloyn: ${error}`);
     }
   }
 

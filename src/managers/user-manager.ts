@@ -11,11 +11,36 @@ export class UserManager {
   private accountParser: AccountParser;
   private fileWatcher: FSWatcher | null = null;
   private watchedFilePath: string | null = null;
+  private nextSenderIndex = 0;
 
   constructor(logger: Logger) {
     this.logger = logger;
     this.accountParser = new AccountParser(logger);
   }
+
+  public async sendMessageFromNextUser(
+    streamerNickname: string,
+    message: string,
+  ): Promise<SendMessageFromNextUserResult> {
+    const usernames = this.getAllUsernames();
+    if (usernames.length === 0) {
+      const error = "No users available to send a message";
+      this.logger.error(error);
+      return { response: { success: false, error }, username: null };
+    }
+
+    const username = usernames[this.nextSenderIndex];
+    this.nextSenderIndex = (this.nextSenderIndex + 1) % usernames.length;
+
+    this.logger.info(
+      `Sending solo message from user ${username} (next index: ${this.nextSenderIndex})`,
+    );
+
+    const response = await this.sendMessageFromUser(username, streamerNickname, message);
+    return { response, username };
+  }
+
+
 
   public async loadAccountsFromFile(filePath: string, enableWatcher: boolean = true): Promise<void> {
     try {
