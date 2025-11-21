@@ -1041,7 +1041,7 @@ export class TelegramBot {
   private async processSoloSmsZloy(ctx: Context, text: string): Promise<void> {
     try {
       const { response, username } =
-        await this.userManager.sendMessageFromNextUser("xweqixms", text);
+        await this.userManager.sendMessageFromNextUser("zloyn", text);
 
       if (response.success) {
         ctx.reply(
