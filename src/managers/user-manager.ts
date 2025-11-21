@@ -1,4 +1,4 @@
-import { UserConfig, SendMessageResponse, StreamerConfig, BroadcastOptions } from '../types/interfaces.js';
+import { UserConfig, SendMessageResponse, StreamerConfig, BroadcastOptions, SendMessageFromNextUserResult } from '../types/interfaces.js';
 import { KickSender } from '../controllers/kick-sender.controller.js';
 import { Logger } from '../utils/logger.js';
 import { AccountParser } from '../utils/account-parser.js';
