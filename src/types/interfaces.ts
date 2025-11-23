@@ -24,6 +24,7 @@ export interface SendMessageResponse {
 export interface SendMessageFromNextUserResult {
   response: SendMessageResponse;
   username: string | null;
+  messagesLeft?: number;
 }
 
 export interface BroadcastOptions {

@@ -12,6 +12,7 @@ export class UserManager {
   private fileWatcher: FSWatcher | null = null;
   private watchedFilePath: string | null = null;
   private nextSenderIndex = 0;
+  private messageCounters = new Map<string, number>();
 
   constructor(logger: Logger) {
     this.logger = logger;
@@ -26,18 +27,33 @@ export class UserManager {
     if (usernames.length === 0) {
       const error = "No users available to send a message";
       this.logger.error(error);
-      return { response: { success: false, error }, username: null };
+      return { response: { success: false, error }, username: null, messagesLeft: 0 };
     }
 
-    const username = usernames[this.nextSenderIndex];
-    this.nextSenderIndex = (this.nextSenderIndex + 1) % usernames.length;
+    let username = usernames[this.nextSenderIndex];
+    let messageCount = this.messageCounters.get(username) || 0;
 
-    this.logger.info(
-      `Sending solo message from user ${username} (next index: ${this.nextSenderIndex})`,
-    );
+    if (messageCount >= 3) {
+      this.messageCounters.set(username, 0);
+      this.nextSenderIndex = (this.nextSenderIndex + 1) % usernames.length;
+      username = usernames[this.nextSenderIndex];
+      messageCount = 0;
+    }
 
     const response = await this.sendMessageFromUser(username, streamerNickname, message);
-    return { response, username };
+    
+    if (response.success) {
+      messageCount++;
+      this.messageCounters.set(username, messageCount);
+    }
+    
+    const messagesLeft = 3 - messageCount;
+
+    this.logger.info(
+      `Sending solo message from user ${username} (message #${messageCount}, ${messagesLeft} left)`,
+    );
+
+    return { response, username, messagesLeft };
   }
 
 

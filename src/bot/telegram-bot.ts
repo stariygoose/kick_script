@@ -259,18 +259,45 @@ export class TelegramBot {
       this.startSendAsUserProcess(ctx);
     });
 
-    this.bot.action("solo_sms_zloy", (ctx) => {
+    this.bot.action("rotate_chat", (ctx) => {
       ctx.answerCbQuery();
-      const userId = this.getUserId(ctx);
-      this.userStates.set(userId, "waiting_solo_sms_zloy_loop_message");
+      const streamers = this.userManager.getAllStreamerNicknames();
+      if (streamers.length === 0) {
+        ctx.reply("Стримеры не найдены. Добавьте их в `accounts.yml`");
+        return;
+      }
+      const buttons = streamers.map((streamer) => [
+        Markup.button.callback(streamer, `select_streamer_${streamer}`),
+      ]);
       ctx.editMessageText(
-        "🔁 Соло смс злому (цикл)\n\nТеперь просто отправляйте сообщения боту. Каждое сообщение будет отправлено от следующего доступного аккаунта стримеру zloyn.\n\nНажмите кнопку ниже, чтобы остановить.",
+        "Выберите стримера:",
+        Markup.inlineKeyboard(buttons),
+      );
+    });
+
+    this.bot.action(/select_streamer_(.+)/, (ctx) => {
+      ctx.answerCbQuery();
+      const streamer = ctx.match[1];
+      const userId = this.getUserId(ctx);
+      this.userStates.set(userId, `waiting_rotate_chat_message_${streamer}`);
+      ctx.editMessageText(
+        `Отправка сообщений стримеру ${streamer}. Просто отправляйте сообщения боту.`,
         Markup.inlineKeyboard([
-          [Markup.button.callback("🛑 Остановить цикл", "stop_solo_loop")],
+          [Markup.button.callback("🛑 Остановить", "stop_rotate_chat")],
         ]),
       );
     });
 
+    this.bot.action("stop_rotate_chat", (ctx) => {
+      ctx.answerCbQuery();
+      const userId = this.getUserId(ctx);
+      const userState = this.userStates.get(userId);
+      if (userState && userState.startsWith("waiting_rotate_chat_message_")) {
+        this.userStates.delete(userId);
+      }
+      ctx.editMessageText("✅ Ротейт чат остановлен.", this.getBackToMenuKeyboard());
+    });
+ 
     this.bot.action("stop_solo_loop", (ctx) => {
       ctx.answerCbQuery();
       const userId = this.getUserId(ctx);
@@ -772,7 +799,7 @@ export class TelegramBot {
       [Markup.button.callback("🎬 Управление стримерами", "streamers_menu")],
       [Markup.button.callback("📢 Рассылка сообщений", "broadcast_menu")],
       [Markup.button.callback("💬 Отправить от пользователя", "send_as_user")],
-      [Markup.button.callback("🔁 Соло смс злому (цикл)", "solo_sms_zloy")],
+      [Markup.button.callback("🔁 Ротейт Чат", "rotate_chat")],
       [Markup.button.callback("⚡ Настройки рассылки", "broadcast_settings")],
       [Markup.button.callback("📁 Файлы", "files_menu")],
       [Markup.button.callback("📊 Статистика", "show_stats")],
@@ -1012,7 +1039,7 @@ export class TelegramBot {
 
     if (!state || !text) return;
 
-    if (state !== "waiting_solo_sms_zloy_loop_message") {
+    if (!state.startsWith("waiting_rotate_chat_message_")) {
       this.userStates.delete(userId);
     }
 
@@ -1044,31 +1071,32 @@ export class TelegramBot {
       case state === "waiting_random_delay_input":
         await this.processRandomDelayInput(ctx, text);
         break;
-      case state === "waiting_solo_sms_zloy_loop_message":
-        await this.processSoloSmsZloyLoop(ctx, text);
+      case state.startsWith("waiting_rotate_chat_message_"):
+        await this.processRotateChatMessage(ctx, text, state.substring("waiting_rotate_chat_message_".length));
         break;
     }
   }
 
-  private async processSoloSmsZloyLoop(
+  private async processRotateChatMessage(
     ctx: Context,
     text: string,
+    streamer: string,
   ): Promise<void> {
     try {
-      const { response, username } =
-        await this.userManager.sendMessageFromNextUser("zloyn", text);
+      const { response, username, messagesLeft } =
+        await this.userManager.sendMessageFromNextUser(streamer, text);
 
       if (response.success) {
-        ctx.reply(`✅ Отправлено от ${username || "неизвестного"}`);
+        ctx.reply(`✅ ${username}: ${messagesLeft} left`);
       } else {
         ctx.reply(
-          `❌ Ошибка от ${username || "неизвестного"}: ${response.error}`,
+          `❌ ${username}: ${response.error}`,
         );
       }
     } catch (error) {
-      ctx.reply(`❌ Произошла ошибка: ${error}`);
+      ctx.reply(`❌ Error: ${error}`);
       this.logger.error(
-        `Failed to process solo sms to zloyn in loop: ${error}`,
+        `Failed to process rotate chat message: ${error}`,
       );
     }
   }
